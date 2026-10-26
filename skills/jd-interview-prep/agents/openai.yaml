@@ -1,0 +1,4 @@
+interface:
+  display_name: "JD Interview Preparation"
+  short_description: "Build role-focused lessons, interview QA, and a working showcase"
+  default_prompt: "Use $jd-interview-prep to create a complete interview preparation pack from the JD I provide."

@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.venv/
+.pytest_cache/
+.ruff_cache/
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+
+# Personal settings, source materials, and generated outputs stay local.
+/config/preferences.yaml
+/Resume/private/
+/JD/preparations/*
+!/JD/preparations/README.md
+/Resume/variants/*
+!/Resume/variants/README.md

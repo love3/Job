@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bilingual Resume"
+  short_description: "Create verified English and Chinese HTML/PDF resumes"
+  default_prompt: "Use $bilingual-resume to create English and Chinese resumes from the role requirements and my verified experience."
