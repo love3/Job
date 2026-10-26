@@ -19,7 +19,7 @@ For explicitly requested base maintenance, update the specified bilingual HTML a
 
 ## 2. Case-id, outputs, and continuation
 
-When a preparation pack exists, reuse its directory name as the `case-id`; do not replace the role identifier with a broad career-direction label.
+When continuing a supplied or explicitly linked preparation pack, reuse its directory name as the `case-id`; do not attach an independent resume to an unrelated pack merely because that pack exists, or replace the role identifier with a broad career-direction label.
 
 For an independent role-specific task, use `<company>-<role>-<YYYY-MM-DD>`, omitting an unknown company. For a general resume without a target role, use `resume-<YYYY-MM-DD>`. Remove path separators and other invalid filename characters, and use the user's timezone for the date. Create a new directory by default; resolve collisions with `-2`, `-3`, and so on rather than silently reusing another role's directory.
 
@@ -87,7 +87,7 @@ Use this skill's renderer:
 python3 <skill-dir>/scripts/render-pdf.py <input.html> <output.pdf>
 ```
 
-The Python dependencies are listed in [scripts/requirements.txt](../scripts/requirements.txt). Install them in an available environment; no virtual environment inside the working directory is required. Prefer system Chrome and do not automatically download Playwright browsers. Honor an environment-provided runtime or explicitly specified browser first. If dependencies remain unavailable, identify the actual missing `playwright`, `pypdf`, or system Chrome component and available alternatives without claiming PDF verification passed.
+The Python dependencies are listed in [scripts/requirements.txt](../scripts/requirements.txt). Install them in an available environment; no virtual environment inside the working directory is required. The renderer uses installed Google Chrome through Playwright's `chrome` channel; it has no browser-selection option and does not download a browser. Use the available Python environment with the listed dependencies. If dependencies remain unavailable, identify the actual missing `playwright`, `pypdf`, or system Chrome component and available alternatives without claiming PDF verification passed.
 
 The renderer returns 0 only for exactly one A4 page with extractable text, and replaces the target PDF only after successful verification. Failure preserves an existing target; do not present it as a successful new render. A reported `REVIEW` file is diagnostic only. Multiple pages, non-A4 geometry, empty extracted text, missing dependencies, and rendering errors are failures.
 

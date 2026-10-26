@@ -40,7 +40,7 @@ All three required Meta files remain mandatory when the project is canceled. Do 
 
 ### Relative links
 
-Resolve links from **the containing file's directory**. Root README links `artifacts/essential.md`; Essential links `kb/00-roadmap.md`, `qa.md`, and `showcase/README.md`. A JD reference from artifacts is `../meta/jd.md`; from a KB chapter it is `../../meta/jd.md`. Coverage links from meta use `../artifacts/...`.
+Resolve links from **the containing file's directory**. Root README links `artifacts/essential.md`; Essential links `kb/00-roadmap.md` and `qa.md`; an optional practice link uses `showcase/README.md` only when that project exists. A JD reference from artifacts is `../meta/jd.md`; from a KB chapter it is `../../meta/jd.md`. Coverage links from meta use `../artifacts/...`.
 
 ## Sources, requirements, and coverage tables
 
@@ -115,7 +115,7 @@ Publication follows [GitHub workflow](github-workflow.md) only when enabled.
 
 ## Entry point, progress, and validation
 
-Root `README.md` first explains the role's core work, capability thread, and priorities, then offers core-understanding, systematic-learning, and integrated-practice routes. Link Essential, KB roadmap, QA, project, and any verified online demo. Core reading does not require running a project. Show dependencies and recovery points for systematic learning; practice enters implementation afterward. Route goals and acceptance follow learning design. Then provide Meta navigation and centralize real-experience gaps, unfinished work, source publication, and online-demo status.
+Root `README.md` first explains the role's core work, capability thread, and priorities, then offers core-understanding, systematic-learning, and integrated-practice routes. Link Essential, KB roadmap, and QA, plus the project when enabled and any verified online demo. Core reading does not require running a project. Show dependencies and recovery points for systematic learning; practice enters implementation afterward. Route goals and acceptance follow learning design. Then provide Meta navigation and centralize real-experience gaps, unfinished work, source publication, and online-demo status.
 
 `meta/progress.md` preserves cross-session facts as concise current status, key decisions, verification summaries, and next steps, not a history of tool output:
 
@@ -127,6 +127,6 @@ Root `README.md` first explains the role's core work, capability thread, and pri
 
 When resume integration is required, follow [Resume handoff](resume-handoff.md) to create `meta/resume-handoff.md` with actual progress paths and maintain independent bilingual-resume status, verification, and links. Resume status does not rewrite interview-material status. An interview-only request records the resume as omitted by user instruction.
 
-Run `python3 scripts/validate_pack.py PACK_DIR` with the pack root. Add `--no-project` for a canceled project or `--portfolio` for nontechnical reports, never both. A default technical project needs a non-document implementation file; portfolio mode allows a nonempty report, PDF, image, etc. beyond README. The script checks required files, relative file links, requirement IDs, type/priority consistency, and coverage columns. It does not check internet links, fragment anchors, teaching quality, artifact authenticity, code execution, user mastery, source pushes, or online deployment.
+Run `python3 scripts/validate_pack.py PACK_DIR` with the pack root. Add `--no-project` for a canceled project or `--portfolio` for nontechnical reports, never both. A default technical project needs a non-document implementation file; portfolio mode allows a nonempty report, PDF, image, etc. beyond README. The script checks required files, relative file links, requirement IDs, type/priority consistency, and coverage columns. Symbolic links and cache directories do not supply pack deliverables or implementation evidence. It does not check internet links, fragment anchors, teaching quality, artifact authenticity, code execution, user mastery, source pushes, or online deployment.
 
 If publication is blocked or writing remains unfinished, deliver usable work and consistently disclose the state in the entry point, progress, and final response. File counts, empty sections, template markers, or a structure pass cannot stand in for complete delivery.

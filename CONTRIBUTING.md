@@ -21,6 +21,7 @@ python3 -m venv .venv
 .venv/bin/python scripts/validate_preferences.py config/preferences.example.yaml
 .venv/bin/python -m unittest discover -s scripts/tests
 python3 -m unittest discover -s skills/jd-interview-prep/scripts/tests
+python3 -m unittest discover -s skills/bilingual-resume/scripts/tests
 python3 scripts/check_public_tree.py
 ```
 

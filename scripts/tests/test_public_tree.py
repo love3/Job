@@ -35,6 +35,7 @@ class PublicTreeTests(unittest.TestCase):
     def test_private_paths_cannot_enter_the_index(self):
         names = ["config/preferences.yaml", "Resume/private/base.html", "Resume/old-base.pdf",
                  "JD/preparations/case/meta/jd.md", "Resume/variants/case/changes.md",
+                 "preparations/case/meta/jd.md", "resume-variants/case/changes.md",
                  "src/.env", "src/.env.production", "node_modules/dependency/index.js"]
         for name in names:
             self.stage(name)
@@ -42,6 +43,11 @@ class PublicTreeTests(unittest.TestCase):
         self.assertEqual(len(errors), len(names))
         for name in names:
             self.assertTrue(any(error.startswith(name + ":") for error in errors))
+
+    def test_standalone_output_roots_do_not_have_public_readme_exceptions(self):
+        for name in ["preparations/README.md", "resume-variants/README.md"]:
+            self.stage(name)
+        self.assertEqual(len(check_index(self.root)), 2)
 
     def test_index_content_is_checked_even_after_worktree_redaction(self):
         name = "example.md"

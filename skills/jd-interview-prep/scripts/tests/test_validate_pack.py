@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import hashlib
+from contextlib import redirect_stderr
+import io
 from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import validate_pack as validator
@@ -177,14 +180,14 @@ class ValidatePackTests(unittest.TestCase):
                 root = Path(directory)
                 make_english_pack(root)
                 change(root, "meta/coverage.md", old, new)
-                self.assert_error(validator.validate_pack(root), f"的 {column} 应链接到")
+                self.assert_error(validator.validate_pack(root), f"{validator.HEADER_ALIASES.get(column, column)} must link to")
 
     def test_english_metadata_still_requires_consistent_types_and_priorities(self) -> None:
         cases = (
-            ("jd", "| JD-001 | Explicit |", "| JD-001 | Unknown |", "来源类型 必须"),
-            ("coverage", "| INF-001 | Inferred |", "| INF-001 | Explicit |", "类型应为“推断”"),
-            ("coverage", "| P0 |", "| P3 |", "优先级必须为 P0、P1 或 P2"),
-            ("coverage", "| P0 |", "| P1 |", "类型和优先级应与"),
+            ("jd", "| JD-001 | Explicit |", "| JD-001 | Unknown |", "Source type must"),
+            ("coverage", "| INF-001 | Inferred |", "| INF-001 | Explicit |", "type must be Inferred"),
+            ("coverage", "| P0 |", "| P3 |", "priority must be P0, P1, or P2"),
+            ("coverage", "| P0 |", "| P1 |", "type and priority must match"),
         )
         for document, old, new, message in cases:
             with self.subTest(case=message), tempfile.TemporaryDirectory() as directory:
@@ -200,7 +203,7 @@ class ValidatePackTests(unittest.TestCase):
                 make_english_pack(root)
                 write(root, f"meta/decoys/{target}", "An existing file outside the correct deliverable location.\n")
                 change(root, "meta/coverage.md", f"../artifacts/{target}", f"decoys/{target}")
-                self.assert_error(validator.validate_pack(root), f"的 {column} 应链接到")
+                self.assert_error(validator.validate_pack(root), f"{validator.HEADER_ALIASES.get(column, column)} must link to")
 
     def test_mixed_header_aliases_cannot_duplicate_a_column(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -213,7 +216,7 @@ class ValidatePackTests(unittest.TestCase):
             text = text.replace("| Explicit | P0 |", "| Explicit | 明确 | P0 |")
             text = text.replace("| Inferred | P1 |", "| Inferred | 推断 | P1 |")
             path.write_text(text, encoding="utf-8")
-            self.assert_error(validator.validate_pack(root), "表格列定义不一致或重复")
+            self.assert_error(validator.validate_pack(root), "inconsistent or duplicate table columns")
 
     def test_validator_is_read_only(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -237,8 +240,8 @@ class ValidatePackTests(unittest.TestCase):
                 write(root, f"meta/decoys/{target}", "存在但不是对应交付物的正文。\n")
                 change(root, "meta/coverage.md", f"../artifacts/{target}", f"decoys/{target}")
                 report = validator.validate_pack(root)
-                self.assert_error(report, f"的 {column} 应链接到")
-                self.assertFalse(any("目标不存在" in error for error in report.errors), report.errors)
+                self.assert_error(report, f"{validator.HEADER_ALIASES.get(column, column)} must link to")
+                self.assertFalse(any("target does not exist" in error for error in report.errors), report.errors)
 
     def test_coverage_is_relative_to_meta_directory(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -248,7 +251,7 @@ class ValidatePackTests(unittest.TestCase):
             # identifies the deliverable. Resolving from pack root is incorrect.
             write(root, "meta/artifacts/essential.md", "错误位置的真实文件。\n")
             change(root, "meta/coverage.md", "../artifacts/essential.md", "artifacts/essential.md")
-            self.assert_error(validator.validate_pack(root), "的 Essential 应链接到 artifacts/essential.md")
+            self.assert_error(validator.validate_pack(root), "Essential must link to artifacts/essential.md")
 
     def test_essential_allows_noncore_reason(self) -> None:
         for value in ("非核心：支撑知识在 KB 和 QA 中展开", "非核心: 扩展知识不属于岗位核心主线"):
@@ -270,14 +273,14 @@ class ValidatePackTests(unittest.TestCase):
                 root = Path(directory)
                 make_pack(root)
                 change(root, "meta/coverage.md", old, new)
-                self.assert_error(validator.validate_pack(root), f"的 {column} 应链接到")
+                self.assert_error(validator.validate_pack(root), f"{validator.HEADER_ALIASES.get(column, column)} must link to")
 
     def test_noncore_preserves_other_coverage_and_link_checks(self) -> None:
         cases = (
-            ("[教学](../artifacts/kb/01-topic.md)", "只有文字，没有教学链接", "的 KB 应链接到"),
-            ("[答案](../artifacts/qa.md)", "只有文字，没有答案链接", "的 QA 应链接到"),
-            ("[项目验证](../artifacts/showcase/README.md)", "只有文字，没有实践或差距", "的 实践证据/差距 应链接到"),
-            ("| P0 |", "| P1 |", "类型和优先级应与"),
+            ("[教学](../artifacts/kb/01-topic.md)", "只有文字，没有教学链接", "KB must link to"),
+            ("[答案](../artifacts/qa.md)", "只有文字，没有答案链接", "QA must link to"),
+            ("[项目验证](../artifacts/showcase/README.md)", "只有文字，没有实践或差距", "Practice evidence / gaps must link to"),
+            ("| P0 |", "| P1 |", "type and priority must match"),
         )
         for old, new, message in cases:
             with self.subTest(check=message), tempfile.TemporaryDirectory() as directory:
@@ -291,25 +294,25 @@ class ValidatePackTests(unittest.TestCase):
             make_pack(root)
             change(root, "meta/coverage.md", "[本质](../artifacts/essential.md)",
                    "非核心：支撑知识，见[说明](missing.md)")
-            self.assert_error(validator.validate_pack(root), "本地链接目标不存在：missing.md")
+            self.assert_error(validator.validate_pack(root), "local link target does not exist: missing.md")
 
     def test_broken_cross_layer_link_has_source_path(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             make_pack(root)
             change(root, "artifacts/essential.md", "../meta/jd.md", "../meta/missing.md")
-            self.assert_error(validator.validate_pack(root), "artifacts/essential.md:1: 本地链接目标不存在")
+            self.assert_error(validator.validate_pack(root), "artifacts/essential.md:1: local link target does not exist")
 
     def test_requirement_validation(self) -> None:
         cases = (
-            ("jd", "JD-001", "JD-01", "ID 必须独立写为"),
-            ("coverage", "| INF-001 | 推断 |", "| INF-001 | 明确 |", "类型应为“推断”"),
-            ("jd", "| JD-001 | 明确 |", "| JD-001 | 未知 |", "来源类型 必须"),
-            ("coverage", "| P0 |", "| P3 |", "优先级必须为 P0、P1 或 P2"),
-            ("coverage", "| P0 |", "| P1 |", "类型和优先级应与"),
-            ("coverage", "JD-001", "JD-999", "缺少 JD 要求 ID：JD-001"),
-            ("coverage", "INF-001", "JD-999", "未登记的 ID：JD-999"),
-            ("jd", "INF-001", "JD-001", "重复 ID：JD-001"),
+            ("jd", "JD-001", "JD-01", "ID must use the standalone"),
+            ("coverage", "| INF-001 | 推断 |", "| INF-001 | 明确 |", "type must be Inferred"),
+            ("jd", "| JD-001 | 明确 |", "| JD-001 | 未知 |", "Source type must"),
+            ("coverage", "| P0 |", "| P3 |", "priority must be P0, P1, or P2"),
+            ("coverage", "| P0 |", "| P1 |", "type and priority must match"),
+            ("coverage", "JD-001", "JD-999", "missing JD requirement IDs: JD-001"),
+            ("coverage", "INF-001", "JD-999", "IDs not registered in meta/jd.md: JD-999"),
+            ("jd", "INF-001", "JD-001", "duplicate ID: JD-001"),
         )
         for document, old, new, message in cases:
             with self.subTest(case=message), tempfile.TemporaryDirectory() as directory:
@@ -324,7 +327,7 @@ class ValidatePackTests(unittest.TestCase):
                 root = Path(directory)
                 make_pack(root)
                 (root / name).unlink()
-                self.assert_error(validator.validate_pack(root), f"缺少必需文件：{name}")
+                self.assert_error(validator.validate_pack(root), f"Missing required file: {name}")
 
     def test_markdown_requires_body(self) -> None:
         for name in ("artifacts/essential.md", "artifacts/qa.md", "artifacts/kb/01-topic.md"):
@@ -332,16 +335,16 @@ class ValidatePackTests(unittest.TestCase):
                 root = Path(directory)
                 make_pack(root)
                 write(root, name, "# 仅标题\n\n```text\n代码块不是教学正文\n```\n")
-                self.assert_error(validator.validate_pack(root), f"{name}: 未检测到正文")
+                self.assert_error(validator.validate_pack(root), f"{name}: no body detected")
 
     def test_no_project_and_residual_links(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             make_pack(root, project=False)
             self.assert_valid(validator.validate_pack(root, no_project=True))
-            self.assert_error(validator.validate_pack(root), "缺少 artifacts/showcase/README.md")
+            self.assert_error(validator.validate_pack(root), "missing artifacts/showcase/README.md")
             write(root, "artifacts/qa.md", "残留链接：[项目](showcase/README.md)。\n")
-            self.assert_error(validator.validate_pack(root, no_project=True), "本地链接目标不存在")
+            self.assert_error(validator.validate_pack(root, no_project=True), "local link target does not exist")
 
     def test_project_requires_actual_non_document_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -349,7 +352,7 @@ class ValidatePackTests(unittest.TestCase):
             make_pack(root)
             (root / "artifacts/showcase/src/main.py").unlink()
             write(root, "artifacts/showcase/docs/design.md", "设计文档正文。\n")
-            self.assert_error(validator.validate_pack(root), "实际项目文件")
+            self.assert_error(validator.validate_pack(root), "implementation file")
 
     def test_portfolio_accepts_report_but_not_license_or_hidden_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -358,10 +361,10 @@ class ValidatePackTests(unittest.TestCase):
             (root / "artifacts/showcase/src/main.py").unlink()
             write(root, "artifacts/showcase/LICENSE", "Temporary license.\n")
             write(root, "artifacts/showcase/.hidden", "Hidden fixture.\n")
-            self.assert_error(validator.validate_pack(root, portfolio=True), "非空作品文件")
+            self.assert_error(validator.validate_pack(root, portfolio=True), "nonempty work file")
             write(root, "artifacts/showcase/report.pdf", "Temporary report bytes.\n")
             self.assert_valid(validator.validate_pack(root, portfolio=True))
-            self.assert_error(validator.validate_pack(root), "实际项目文件")
+            self.assert_error(validator.validate_pack(root), "implementation file")
 
     def test_ignored_directories_are_not_read_or_counted_as_implementation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -373,14 +376,119 @@ class ValidatePackTests(unittest.TestCase):
                 write(root, f"artifacts/kb/{ignored}/generated.md", "缓存正文。\n")
             self.assert_valid(validator.validate_pack(root))
             (root / "artifacts/showcase/src/main.py").unlink()
-            self.assert_error(validator.validate_pack(root), "实际项目文件")
+            self.assert_error(validator.validate_pack(root), "implementation file")
             (root / "artifacts/kb/01-topic.md").unlink()
-            self.assert_error(validator.validate_pack(root), "至少需要一篇 00-roadmap.md 以外")
+            self.assert_error(validator.validate_pack(root), "needs at least one lesson besides 00-roadmap.md")
+
+    def test_linked_files_are_not_read_or_counted_as_deliverables(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "pack"
+            root.mkdir()
+            make_pack(root)
+            external = Path(directory) / "external.md"
+            external.write_text("External fixture, not an owned lesson.\n", encoding="utf-8")
+            essential = root / "artifacts/essential.md"
+            essential.unlink()
+            essential.symlink_to(external)
+            original_read = Path.read_text
+
+            def guarded_read(path, *args, **kwargs):
+                if path.is_symlink() or path == external:
+                    raise AssertionError("must not read linked external content")
+                return original_read(path, *args, **kwargs)
+
+            with patch.object(Path, "read_text", guarded_read):
+                report = validator.validate_pack(root)
+            self.assert_error(report, "Missing required file: artifacts/essential.md")
+
+    def test_linked_directories_and_sources_do_not_satisfy_project_checks(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "pack"
+            root.mkdir()
+            make_pack(root)
+            external = Path(directory) / "external"
+            external.mkdir()
+            write(external, "main.py", "external_fixture = True\n")
+            source = root / "artifacts/showcase/src/main.py"
+            source.unlink()
+            source.symlink_to(external / "main.py")
+            self.assert_error(validator.validate_pack(root), "implementation file")
+            source.unlink()
+            source.parent.rmdir()
+            source.parent.symlink_to(external, target_is_directory=True)
+            self.assert_error(validator.validate_pack(root), "implementation file")
+
+            readme = root / "artifacts/showcase/README.md"
+            readme.unlink()
+            write(external, "README.md", "External showcase fixture.\n")
+            readme.symlink_to(external / "README.md")
+            self.assert_error(validator.validate_pack(root), "missing artifacts/showcase/README.md")
+
+    def test_practice_evidence_requires_owned_files_or_real_directories(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "pack"
+            root.mkdir()
+            make_english_pack(root)
+            external = Path(directory) / "external"
+            external.mkdir()
+            write(external, "proof.md", "External verification fixture.\n")
+            showcase = root / "artifacts/showcase"
+            (showcase / "external.md").symlink_to(external / "proof.md")
+            (showcase / "internal.md").symlink_to(showcase / "README.md")
+            (showcase / "external-dir").symlink_to(external, target_is_directory=True)
+            (showcase / "internal-dir").symlink_to(root / "artifacts/kb", target_is_directory=True)
+            (showcase / "empty").mkdir()
+
+            old = "[Showcase evidence](../artifacts/showcase/README.md)"
+            invalid = ["../artifacts/showcase/external.md", "../artifacts/showcase/internal.md",
+                       "../artifacts/showcase/external-dir", "../artifacts/showcase/internal-dir",
+                       "../artifacts/showcase/external-dir/proof.md",
+                       "../artifacts/showcase/internal-dir/01-topic.md",
+                       "../artifacts/showcase/empty", "../../external/proof.md", "../.."]
+            original = (root / "meta/coverage.md").read_text(encoding="utf-8")
+            for target in invalid:
+                with self.subTest(target=target):
+                    write(root, "meta/coverage.md", original.replace(old, f"[Practice evidence]({target})"))
+                    self.assert_error(validator.validate_pack(root), "Practice evidence / gaps must link")
+
+            for target in ["../artifacts/kb/01-topic.md", "../artifacts/kb", "../artifacts/showcase"]:
+                with self.subTest(owned=target):
+                    write(root, "meta/coverage.md", original.replace(old, f"[Practice evidence]({target})"))
+                    self.assert_valid(validator.validate_pack(root))
+
+    def test_explicit_gap_and_global_resume_links_may_reference_external_sources(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "pack"
+            root.mkdir()
+            make_english_pack(root)
+            write(Path(directory), "source.md", "External source fixture, not project evidence.\n")
+            change(root, "meta/coverage.md", "[Showcase evidence](../artifacts/showcase/README.md)",
+                   "Gap: experience is unverified; [source](../../source.md)")
+            write(root, "meta/resume-handoff.md", "Resume source: [reference](../../source.md).\n")
+            self.assert_valid(validator.validate_pack(root))
+            (Path(directory) / "source.md").unlink()
+            self.assert_error(validator.validate_pack(root), "local link target does not exist")
 
     def test_project_modes_are_mutually_exclusive(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            with self.assertRaisesRegex(ValueError, "不能同时启用"):
+            with self.assertRaisesRegex(ValueError, "mutually exclusive"):
                 validator.validate_pack(directory, no_project=True, portfolio=True)
+
+    def test_missing_table_guides_english_users(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            make_english_pack(root)
+            write(root, "meta/jd.md", "The role is described here, but its requirement table is missing.\n")
+            report = validator.validate_pack(root)
+            self.assert_error(report, "required columns: ID, Source type, JD requirement / supplemental capability, Priority")
+
+    def test_invalid_loop_path_is_a_cli_argument_error(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            link = Path(directory) / "loop"
+            link.symlink_to(link, target_is_directory=True)
+            with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as result:
+                validator.main([str(link)])
+            self.assertEqual(result.exception.code, 2)
 
 
 if __name__ == "__main__":

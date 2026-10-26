@@ -17,3 +17,6 @@ dist/
 !/JD/preparations/README.md
 /Resume/variants/*
 !/Resume/variants/README.md
+# Standalone skill outputs when invoked from this repository root.
+/preparations/
+/resume-variants/

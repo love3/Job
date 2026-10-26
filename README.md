@@ -40,13 +40,15 @@ Job/
 
 A preparation pack has a root README, `artifacts/` (independent Essential, systematic KB, QA, and an optional showcase), and `meta/` (required JD, coverage, and progress records, plus conditional sources/handoff). Structure checks do not establish teaching depth or project correctness. The resume workflow uses confirmed facts, not tutorial answers or automatically generated project claims.
 
-Showcases are built **locally by default**. Select `showcase.publish: public` or `private`, or explicitly request publication, to publish a separate showcase repository. With publication enabled and a suitable frontend, `pages: true` requests a static demo; it does not host a backend or guarantee private access. Backend flows remain reproducible locally. Only reviewed showcase content is published, not the preparation pack or resume.
+Showcases are built **locally by default**. Select `showcase.publish: public` or `private`, or explicitly request publication, to publish a separate showcase repository. `pages` defaults to `true` for suitable static demos after publication is enabled; set it to `false` to disable deployment. Pages does not host a backend. Private source does not guarantee a private site ([GitHub documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)): verify the audience first, and require explicit user authorization for a public demo before exposing private-source content publicly. Otherwise omit Pages or record it pending. Keep source visibility unchanged. Backend flows remain reproducible locally. Only reviewed showcase content is published, not the preparation pack or resume.
 
-Private settings, sources, JD inputs, and outputs are ignored. `.gitignore` does not remove files already committed or prevent force-adding them. The public-tree check rejects known private paths and local home paths; it is not a comprehensive personal-data or secret scanner. Review every contribution. Deliberately public examples must use synthetic facts and belong in a separately reviewed `examples/` contribution.
+Private settings, sources, JD inputs, and outputs are ignored, including the standalone skills' default root-level `preparations/` and `resume-variants/` outputs. `.gitignore` does not remove files already committed or prevent force-adding them. The public-tree check rejects known private paths and local home paths; it is not a comprehensive personal-data or secret scanner. Review every contribution. Deliberately public examples must use synthetic facts and belong in a separately reviewed `examples/` contribution.
 
 ## Preferences
 
 The [template](config/preferences.example.yaml) lists all supported settings. Paths are relative to the Job root. `language: auto` follows the request; a language tag such as `zh-CN` fixes preparation output. `resume.enabled` controls the connected JD-to-resume workflow, not explicit standalone resume requests.
+
+`showcase.enabled: false` skips the project and all its publication while retaining teaching and any enabled resume handoff. `frontend: auto` and `backend: auto` mean no fixed stack preference; `prefer_config` needs a concrete frontend to override the JD.
 
 `frontend_policy: prefer_jd` gives explicit JD technology priority. With `prefer_config`, the chosen frontend can differ from the JD; teaching and QA still cover the actual requirement. A preferred backend is used when the JD leaves the choice open. Free-text `notes` hold conditional or writing preferences. Preferences cannot remove factual or verification requirements.
 
@@ -63,6 +65,7 @@ python3 -m venv .venv
 .venv/bin/python scripts/validate_preferences.py config/preferences.example.yaml
 .venv/bin/python -m unittest discover -s scripts/tests
 python3 -m unittest discover -s skills/jd-interview-prep/scripts/tests
+python3 -m unittest discover -s skills/bilingual-resume/scripts/tests
 python3 scripts/check_public_tree.py
 ```
 

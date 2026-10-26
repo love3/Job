@@ -166,8 +166,8 @@ def load_preferences(path: str | Path) -> dict[str, Any]:
         node = yaml.compose(content, Loader=PreferencesLoader)
     except PreferencesError:
         raise
-    except yaml.YAMLError:
-        raise PreferencesError("preferences: invalid YAML syntax") from None
+    except (yaml.YAMLError, RecursionError):
+        raise PreferencesError("preferences: invalid YAML syntax or excessive nesting") from None
     if node is None:
         return {}
     return _mapping(node, "preferences", _FIELDS)

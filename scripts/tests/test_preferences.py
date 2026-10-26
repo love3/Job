@@ -131,6 +131,19 @@ resume:
                     self.assertEqual(preferences.main([str(path)]), 1)
                 self.assertNotIn(secret, output.getvalue())
 
+    def test_excessively_nested_yaml_has_a_controlled_private_error(self) -> None:
+        secret = "private-value-must-not-appear"
+        text = "resume: " + "[" * 1500 + secret + "]" * 1500
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "preferences.yaml"
+            path.write_text(text, encoding="utf-8")
+            output = io.StringIO()
+            with redirect_stderr(output):
+                self.assertEqual(preferences.main([str(path)]), 1)
+            self.assertIn("invalid YAML syntax or excessive nesting", output.getvalue())
+            self.assertNotIn("Traceback", output.getvalue())
+            self.assertNotIn(secret, output.getvalue())
+
     def test_validation_is_read_only(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "preferences.yaml"

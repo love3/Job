@@ -40,13 +40,15 @@ Job/
 
 准备包包含根 README、`artifacts/`（独立 Essential、系统 KB、QA、可选 showcase）及 `meta/`（必需的 JD、覆盖与进度记录，按需来源和简历交接）。结构通过不能证明教学深度或项目正确。简历只使用已确认事实，教程答案和自动生成项目不能直接作为本人经历。
 
-Showcase **默认只在本地生成**。设置 `showcase.publish: public` 或 `private`，或在本次请求中明确发布后，才发布独立的 showcase 仓库。允许发布且有适合前端时，`pages: true` 请求提供静态演示；它不托管后端，也不保证私密访问。完整后端流程保留本地可复现。只发布审阅过的项目内容，不发布整个准备包或简历。
+Showcase **默认只在本地生成**。设置 `showcase.publish: public` 或 `private`，或在本次请求中明确发布后，才发布独立的 showcase 仓库。启用发布且适合静态演示时，`pages` 默认 `true`；设为 `false` 可关闭部署。Pages 不托管后端。私有源码不保证站点私有（[GitHub 文档](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)）：必须先核实访问范围，将私有源码内容公开还需用户明确授权公开演示，否则省略 Pages 或记为待确认，保持源码可见性不变。完整后端流程保留本地可复现。只发布审阅过的项目内容，不发布整个准备包或简历。
 
-个人设置、来源资料、JD 输入和产物均被忽略。`.gitignore` 不会删除已提交的内容，也无法阻止强制添加。公开目录检查会拒绝已知私人路径和本机用户目录路径，但不能全面识别个人信息或密钥，贡献前仍须审阅。公开示例应使用虚构事实，单独放到经审阅的 `examples/` 中。
+个人设置、来源资料、JD 输入和产物均被忽略，包括技能独立调用默认生成的根目录 `preparations/` 和 `resume-variants/`。`.gitignore` 不会删除已提交的内容，也无法阻止强制添加。公开目录检查会拒绝已知私人路径和本机用户目录路径，但不能全面识别个人信息或密钥，贡献前仍须审阅。公开示例应使用虚构事实，单独放到经审阅的 `examples/` 中。
 
 ## 个人偏好
 
 [模板](config/preferences.example.yaml) 列出支持的设置。路径相对 Job 根目录解析。`language: auto` 跟随请求，`zh-CN` 等语言标签固定学习包语言。`resume.enabled` 控制 JD 后的简历联动，不影响明确的独立简历请求。
+
+`showcase.enabled: false` 跳过项目及其全部发布，但保留教学和已启用的简历联动。`frontend: auto` 与 `backend: auto` 表示没有固定技术偏好；只有配置了具体前端技术，`prefer_config` 才会覆盖 JD 的框架要求。
 
 `frontend_policy: prefer_jd` 优先采用 JD 明确的前端技术；`prefer_config` 允许 showcase 使用配置中的偏好，但教学与 QA 仍覆盖 JD 的真实要求。后端偏好用于 JD 未限定的情况。各模块的 `notes` 保存条件或写作偏好，不得取消事实和验证要求。
 
@@ -63,6 +65,7 @@ python3 -m venv .venv
 .venv/bin/python scripts/validate_preferences.py config/preferences.example.yaml
 .venv/bin/python -m unittest discover -s scripts/tests
 python3 -m unittest discover -s skills/jd-interview-prep/scripts/tests
+python3 -m unittest discover -s skills/bilingual-resume/scripts/tests
 python3 scripts/check_public_tree.py
 ```
 

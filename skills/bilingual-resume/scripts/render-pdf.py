@@ -101,7 +101,7 @@ def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
     try:
         src, out = _paths(argv)
-    except (ValueError, OSError) as exc:
+    except (ValueError, OSError, RuntimeError) as exc:
         print(f"Argument error: {exc}", file=sys.stderr)
         return 2
     try:

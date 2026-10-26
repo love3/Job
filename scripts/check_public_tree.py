@@ -21,6 +21,9 @@ def private_path(name: str) -> bool:
     path = PurePosixPath(name)
     if name == "config/preferences.yaml" or name.startswith("Resume/private/"):
         return True
+    # Standalone skill defaults can also be created in this repository root.
+    if name.startswith(("preparations/", "resume-variants/")):
+        return True
     for directory in ("JD/preparations/", "Resume/variants/"):
         if name.startswith(directory) and name != directory + "README.md":
             return True

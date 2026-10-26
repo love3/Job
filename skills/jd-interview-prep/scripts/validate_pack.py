@@ -284,20 +284,21 @@ def table_rows(text: str, headers: tuple[str, ...], label: str, report: Report) 
             continue
         found = True
         if len(separator) != len(cells) or len(set(cells)) != len(cells):
-            report.errors.append(f"{label}:{cursor + 1}: 表格列定义不一致或重复。")
+            report.errors.append(f"{label}:{cursor + 1}: inconsistent or duplicate table columns.")
         header_cells = cells
         cursor += 2
         while cursor < len(lines) and "|" in lines[cursor] and lines[cursor].strip():
             values = _table_cells(lines[cursor])
             if len(values) != len(header_cells):
-                report.errors.append(f"{label}:{cursor + 1}: 表格列数应为 {len(header_cells)}。")
+                report.errors.append(f"{label}:{cursor + 1}: expected {len(header_cells)} table columns.")
             else:
                 rows.append(TableRow(dict(zip(header_cells, values)), cursor + 1))
             cursor += 1
     if not found:
-        report.errors.append(f"{label}: 缺少要求表格，列名应包含：{'、'.join(headers)}，且 ID 为首列。")
+        names = ", ".join(HEADER_ALIASES.get(header, header) for header in headers)
+        report.errors.append(f"{label}: missing requirement table; required columns: {names}; ID must be first.")
     elif not rows:
-        report.errors.append(f"{label}: 要求表格没有数据行。")
+        report.errors.append(f"{label}: requirement table has no data rows.")
     return rows
 
 
@@ -306,9 +307,9 @@ def _ids(rows: list[TableRow], label: str, report: Report) -> set[str]:
     for row in rows:
         identifier = row.cells["ID"].strip().strip("`")
         if not REQUIREMENT_ID.fullmatch(identifier):
-            report.errors.append(f"{label}:{row.line}: ID 必须独立写为 JD-001 或 INF-001 格式。")
+            report.errors.append(f"{label}:{row.line}: ID must use the standalone JD-001 or INF-001 format.")
         elif identifier in seen:
-            report.errors.append(f"{label}:{row.line}: 重复 ID：{identifier}。")
+            report.errors.append(f"{label}:{row.line}: duplicate ID: {identifier}.")
         else:
             seen.add(identifier)
     return seen
@@ -327,15 +328,16 @@ def _requirement_metadata(
         description = row.cells[description_column].strip()
         location = f"{label}:{row.line}: {identifier}"
         if kind not in {"明确", "推断"}:
-            report.errors.append(f"{location} 的 {kind_column} 必须为“明确”或“推断”。")
+            report.errors.append(f"{location}: {HEADER_ALIASES.get(kind_column, kind_column)} must be Explicit or Inferred.")
         elif REQUIREMENT_ID.fullmatch(identifier):
             expected_kind = "明确" if identifier.startswith("JD-") else "推断"
             if kind != expected_kind:
-                report.errors.append(f"{location} 的类型应为“{expected_kind}”，与 ID 前缀一致。")
+                expected_name = "Explicit" if identifier.startswith("JD-") else "Inferred"
+                report.errors.append(f"{location}: type must be {expected_name}, matching the ID prefix.")
         if priority not in {"P0", "P1", "P2"}:
-            report.errors.append(f"{location} 的优先级必须为 P0、P1 或 P2。")
+            report.errors.append(f"{location}: priority must be P0, P1, or P2.")
         if description in {"", "-", "—", "–", "N/A", "n/a"}:
-            report.errors.append(f"{location} 的 {description_column} 不能为空或仅为占位符。")
+            report.errors.append(f"{location}: {HEADER_ALIASES.get(description_column, description_column)} must not be empty or a placeholder.")
         metadata.setdefault(identifier, (kind, priority))
     return metadata
 
@@ -352,16 +354,39 @@ def _nonlearning(value: str) -> bool:
     return bool(re.search(r"(?:非学习项|Non-learning item)\s*[:：]\s*\S", value, re.I))
 
 
-def _coverage(rows: list[TableRow], text: str, root: Path, report: Report) -> None:
+def _owned_evidence(link: Link, base: Path, root: Path, owned: set[Path]) -> bool:
+    target = relative_target(link.destination)
+    if target is None:
+        return False
+    candidate = base / target
+    try:
+        # Check the original path before resolving it: a symlink alias to an
+        # owned file is navigation, not an owned evidence artifact itself.
+        for component in (candidate, *candidate.parents):
+            if component == root:
+                break
+            if component.is_symlink():
+                return False
+        resolved = candidate.resolve()
+        if not _is_within(resolved, root):
+            return False
+        if resolved in owned:
+            return True
+        return resolved.is_dir() and any(_is_within(path, resolved) for path in owned)
+    except (OSError, ValueError, RuntimeError):
+        return False
+
+
+def _coverage(rows: list[TableRow], text: str, root: Path, report: Report, owned: set[Path]) -> None:
     references, _ = _references(prose(text))
     coverage_path = root / COVERAGE_FILE
     for row in rows:
         identifier = row.cells["ID"]
         for column in ("Essential", "KB", "QA", "实践证据/差距"):
             value = row.cells[column].strip()
-            label = f"{COVERAGE_FILE}:{row.line}: {identifier} 的 {column}"
+            label = f"{COVERAGE_FILE}:{row.line}: {identifier}: {HEADER_ALIASES.get(column, column)}"
             if value in {"", "-", "—", "–", "N/A", "n/a"}:
-                report.errors.append(f"{label} 不能为空或仅为占位符。")
+                report.errors.append(f"{label} must not be empty or a placeholder.")
                 continue
             links = markdown_links(value, references)
             if column == "实践证据/差距":
@@ -369,14 +394,14 @@ def _coverage(rows: list[TableRow], text: str, root: Path, report: Report) -> No
                     r"(?:已省略|差距|未验证|待完成|Omitted|Gap|Unverified|Pending)\s*[:：]\s*\S",
                     value, re.I,
                 )
-                evidence_links = [link for link in links if relative_target(link.destination) is not None]
                 has_evidence = any(
                     re.search(r"showcase|exercise|practice|\blabs?\b|练习|实践|项目|演示",
                               link.label + " " + link.destination, re.I)
-                    for link in evidence_links
+                    and _owned_evidence(link, coverage_path.parent, root, owned)
+                    for link in links
                 )
                 if not explicit_status and not has_evidence:
-                    report.errors.append(f"{label} 应链接到项目/练习，或明确填写已省略：原因、差距：原因、未验证：原因、待完成：原因。")
+                    report.errors.append(f"{label} must link to an owned project/exercise file or directory (not a symlink), or state Omitted:, Gap:, Unverified:, or Pending: with a reason.")
                 continue
             if _nonlearning(value):
                 continue
@@ -397,8 +422,8 @@ def _coverage(rows: list[TableRow], text: str, root: Path, report: Report) -> No
                     matched = True
                     break
             if not matched:
-                exemption = "；支撑或扩展要求可填写“非核心：原因”" if column == "Essential" else ""
-                report.errors.append(f"{label} 应链接到 {expected}，非教学要求可填写“非学习项：原因”{exemption}。")
+                exemption = "; supporting or extended topics may use Non-core: with a reason" if column == "Essential" else ""
+                report.errors.append(f"{label} must link to {expected}; factual requirements may use Non-learning item: with a reason{exemption}.")
 
 
 def owned_files(root: Path):
@@ -408,7 +433,11 @@ def owned_files(root: Path):
             if name not in IGNORED_DIRS and not (Path(current) / name).is_symlink()
         )
         for name in sorted(files):
-            yield Path(current) / name
+            path = Path(current) / name
+            # A link to another pack or private source is not an owned
+            # deliverable. Do not read it or count it as implementation.
+            if not path.is_symlink() and path.is_file():
+                yield path
 
 
 def _has_body(text: str) -> bool:
@@ -451,28 +480,29 @@ def _project_file(path: Path, portfolio: bool = False) -> bool:
 
 def validate_pack(directory: str | Path, no_project: bool = False, portfolio: bool = False) -> Report:
     if no_project and portfolio:
-        raise ValueError("no_project 与 portfolio 不能同时启用。")
+        raise ValueError("no_project and portfolio are mutually exclusive.")
     root = Path(directory).expanduser().resolve()
     if not root.is_dir():
-        raise ValueError(f"输入路径不是可读取的准备包目录：{root}")
+        raise ValueError(f"Input is not a readable preparation-pack directory: {root}")
     report = Report()
-    for name in REQUIRED_FILES:
-        if not (root / name).is_file():
-            report.errors.append(f"缺少必需文件：{name}。")
     files = list(owned_files(root))
+    owned = set(files)
+    for name in REQUIRED_FILES:
+        if root / name not in owned:
+            report.errors.append(f"Missing required file: {name}.")
     kb_docs = [path for path in files if _is_within(path, root / KB_DIR) and
                path.suffix.lower() == ".md" and path != root / KB_DIR / "00-roadmap.md"]
     if not kb_docs:
-        report.errors.append(f"{KB_DIR}/ 至少需要一篇 00-roadmap.md 以外的知识正文。")
+        report.errors.append(f"{KB_DIR}/ needs at least one lesson besides 00-roadmap.md.")
     if not no_project:
-        if not (root / SHOWCASE_DIR / "README.md").is_file():
-            report.errors.append(f"项目已启用，缺少 {SHOWCASE_DIR}/README.md。")
+        if root / SHOWCASE_DIR / "README.md" not in owned:
+            report.errors.append(f"Project enabled, but missing {SHOWCASE_DIR}/README.md.")
         project_files = [path for path in files if _is_within(path, root / SHOWCASE_DIR) and _project_file(path, portfolio=portfolio)]
         if not project_files:
             if portfolio:
-                report.errors.append(f"作品集已启用，{SHOWCASE_DIR}/ 至少需要一个 README 之外的非空作品文件，许可证或隐藏文件不算作品。")
+                report.errors.append(f"Portfolio enabled: {SHOWCASE_DIR}/ needs a nonempty work file beyond README; licenses and hidden files do not count.")
             else:
-                report.errors.append(f"项目已启用，{SHOWCASE_DIR}/ 至少需要一个非空的实际项目文件，不能只有目录或说明文档。")
+                report.errors.append(f"Project enabled: {SHOWCASE_DIR}/ needs a nonempty implementation file, not only directories or documentation.")
     documents = {}
     for path in files:
         if path.suffix.lower() != ".md":
@@ -482,14 +512,14 @@ def validate_pack(directory: str | Path, no_project: bool = False, portfolio: bo
         try:
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeError) as error:
-            report.errors.append(f"{label}: 无法读取 UTF-8 Markdown：{error}。")
+            report.errors.append(f"{label}: cannot read UTF-8 Markdown: {error}.")
             continue
         documents[label] = text
         if not _has_body(text):
-            report.errors.append(f"{label}: 未检测到正文（仅标题、表头、代码示例或空白不足以说明内容）。")
+            report.errors.append(f"{label}: no body detected; headings, table headers, code examples, and whitespace alone are insufficient.")
         for match in PLACEHOLDER.finditer(prose(text)):
             line = text.count("\n", 0, match.start()) + 1
-            report.warnings.append(f"{label}:{line}: 疑似未替换模板标记 {match.group()!r}，请人工确认；代码中的标记不参与检查。")
+            report.warnings.append(f"{label}:{line}: possible unresolved template marker {match.group()!r}; review manually. Markers inside code are ignored.")
         seen_links = set()
         for link in markdown_links(text):
             target = relative_target(link.destination)
@@ -504,7 +534,7 @@ def validate_pack(directory: str | Path, no_project: bool = False, portfolio: bo
             except (OSError, ValueError, RuntimeError):
                 exists = False
             if not exists:
-                report.errors.append(f"{label}:{link.line}: 本地链接目标不存在：{link.destination}。")
+                report.errors.append(f"{label}:{link.line}: local link target does not exist: {link.destination}.")
     if JD_FILE in documents and COVERAGE_FILE in documents:
         jd_rows = table_rows(documents[JD_FILE], JD_HEADERS, JD_FILE, report)
         coverage_rows = table_rows(documents[COVERAGE_FILE], COVERAGE_HEADERS, COVERAGE_FILE, report)
@@ -519,13 +549,13 @@ def validate_pack(directory: str | Path, no_project: bool = False, portfolio: bo
         missing = sorted(jd_ids - coverage_ids)
         extra = sorted(coverage_ids - jd_ids)
         if missing:
-            report.errors.append(f"{COVERAGE_FILE} 缺少 JD 要求 ID：{', '.join(missing)}。")
+            report.errors.append(f"{COVERAGE_FILE}: missing JD requirement IDs: {', '.join(missing)}.")
         if extra:
-            report.errors.append(f"{COVERAGE_FILE} 存在 {JD_FILE} 未登记的 ID：{', '.join(extra)}。")
+            report.errors.append(f"{COVERAGE_FILE}: IDs not registered in {JD_FILE}: {', '.join(extra)}.")
         for identifier in sorted(jd_ids & coverage_ids):
             if jd_metadata[identifier] != coverage_metadata[identifier]:
-                report.errors.append(f"{COVERAGE_FILE} 的 {identifier} 类型和优先级应与 {JD_FILE} 一致。")
-        _coverage(coverage_rows, documents[COVERAGE_FILE], root, report)
+                report.errors.append(f"{COVERAGE_FILE}: {identifier} type and priority must match {JD_FILE}.")
+        _coverage(coverage_rows, documents[COVERAGE_FILE], root, report, owned)
     return report
 
 
@@ -538,7 +568,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         report = validate_pack(args.pack_dir, no_project=args.no_project, portfolio=args.portfolio)
-    except (ValueError, OSError) as error:
+    except (ValueError, OSError, RuntimeError) as error:
         parser.error(str(error))
     for error in report.errors:
         print(f"ERROR: {error}")
