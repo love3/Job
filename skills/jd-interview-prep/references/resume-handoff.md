@@ -1,27 +1,22 @@
-# Handoff to Bilingual Role-specific Resumes
+# 简历交接
 
-Read only when workspace instructions or the user requests resume integration. This skill is independent. Without explicitly provided fact sources and destinations, do not search broadly for or modify personal files. Obtain the workspace root from loaded instructions or explicit input, never from the skill installation path.
+只在用户或工作区要求联动时执行；只准备面试则记简历已省略。履历来源与目标位置须由用户或已加载工作区提供，不从技能安装位置搜索私人资料。
 
-## Handoff file
+## 交接内容
 
-Create `meta/resume-handoff.md` only when integration is needed; do not copy the whole KB. Record at least:
+写入 `meta/resume-handoff.md`：
 
-- Paths to the pack root, `meta/jd.md`, `meta/coverage.md`, `meta/progress.md`, and root README. Resolve handoff links from its directory and use these paths for writeback.
-- Case-id: reuse the pack root directory name, preserving it on continuation. The containing `meta` directory is not the case-id. Include company, role, JD source, and links to relevant `JD-*` requirements.
-- Available English/Chinese bases or supplied experience, plus an explicit resume destination. Include the workspace root and adopted preferences when available; otherwise mark them unavailable. User text is a valid source, and the resume skill can create HTML without a base using its Design System. Prefer relative links; accurately record absolute paths for external files.
-- Relevant source files/sections, only necessary short quotations, and unmet requirements. Do not copy bases, create fact identifiers, or promote `INF-*` inferences into personal experience.
-- `artifacts/showcase/` path, verified repository if published, actual implementation and check records, accepted online demo and simulation scope when applicable, unverified limitations, and known user participation or “unknown.” Explicitly state omission or absence of a project.
-- Candidate resume wording, associated requirements, evidence, participation status, and limitations. Passing automated tests proves artifact behavior, not personal contribution or proficiency.
-- Separate interview-material, implementation/verification, source-publication, online-demo, and resume states, with next steps. Public source or an accessible Pages demo does not prove user participation.
+- 包根目录、JD/覆盖/进度/入口的实际路径；链接相对交接文件解析。
+- case-id 取包目录名，不能取 `meta`；公司、岗位、来源及相关 JD 编号。
+- 可用双语 base 或用户经历、指定简历目标目录、工作区根与已采用偏好。用户文本也可作为来源，无 base 不阻止制作；缺项写未知。
+- 相关事实的文件/章节与必要短引文、未满足要求，不复制 base 或另建事实清单。
+- 项目路径、真实实现/验证记录、已核实的源码与演示链接、模拟范围、未测部分、用户实际参与状态；无项目明确说明。
+- 候选简历表述、依据与限制，以及面试资料/项目/发布/简历各自状态和下一步。
 
-Only projects with explicitly established user participation may enter a role-specific resume. Editing the base additionally requires an explicit maintenance request. Keep unknown candidates in the handoff and resume `changes.md`; do not label them confirmed or block a resume based on established experience.
+项目通过测试或已上线都不能证明用户贡献。只有实际参与已明确的项目才可写入派生简历；写入 base 还需明确维护要求。其余保留为候选，用既有真实经历继续制作，不阻塞等待项目确认。
 
-## Invocation and status
+## 执行与回写
 
-1. Mark the resume not started/in progress in `meta/progress.md` and save the handoff without redoing completed interview material.
-2. Load the installed `bilingual-resume` entry point or the workspace-provided skill. Pass experience, handoff, destination, and available bases/preferences without requiring one fixed source layout. If unavailable, accurately mark resume integration blocked rather than claiming overall completion.
-3. Use the user's or workspace's destination, otherwise the resume skill's independent output rule. Record the chosen location and reuse the case-id. The resume skill owns output/rendering requirements; preserve user edits on continuation.
-4. Inspect actual bilingual files and status. Write links into the pack root README and independent resume status into the handoff-specified progress file. Run structural validation on the pack root to check new relative links.
-5. If rendering or factual review fails, preserve interview outputs, completed versions, and next steps. Do not call the entire integrated task complete. For interview-only requests, record resume omission by user instruction and do not invoke the resume skill.
+保存交接和简历状态后，调用已安装或工作区提供的 `bilingual-resume`，传入真实来源、交接和目标目录，复用 case-id。用户目标优先，其次工作区，均无指定则按简历技能默认位置。不要重做已完成教材。
 
-Do not publish the handoff, personal facts, resumes, or changes record in the showcase. Personal background informs resume selection by default; preserve beginner-level teaching unless the user requests a different learning baseline.
+检查实际双语文件和验证状态，将简历链接回写包根 README，独立状态回写交接指定的进度，再校验包内链接。技能缺失、事实不足或渲染失败时保留已有成果并明确未完成，不能把联动标为全部完成。交接、简历与私人事实均留在本地。

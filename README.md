@@ -1,62 +1,45 @@
-# Job
+# Job：面试准备与双语简历
 
-English | [简体中文](README.zh-CN.md)
+从岗位问题建立能力主线，用知识、练习和作品准备面试；从真实经历提炼贡献，生成中英文简历。
 
-Turn a job description into an interview learning pack, and real experience into matching English/Chinese resumes. Job provides two independent agent skills and a workspace that can connect them. Contributions to teaching quality, reproducible examples, tooling, and documentation are welcome.
+## 使用
 
-## Start here
+让 Agent 读取 [AGENTS.md](AGENTS.md)，再提出任务：
 
-1. Clone this repository and open it as your agent's workspace. Ask the agent to read [AGENTS.md](AGENTS.md). File access is required; screenshots need vision/OCR, source verification needs internet access, and project checks need the relevant runtime.
-2. Optionally copy `config/preferences.example.yaml` to `config/preferences.yaml`. Edit only the settings you need. The personal file is ignored; the example never becomes active automatically.
-3. For resumes, supply real experience or put your own bases/reference files in `Resume/private/` and configure their paths. No private files are included in the clone. Bases stay read-only unless you explicitly request maintenance.
-4. Invoke a skill with one of the requests below. You can use any request language; preparation output follows that language unless configured otherwise. Resumes are always an English/Chinese pair.
-
-| Workflow | Example request |
+| 需要什么 | 请求示例 |
 | --- | --- |
-| Interview only | “Use $jd-interview-prep with this JD. Prepare me from the core concepts; do not update my resume.” |
-| Resume only | “Use $bilingual-resume with my supplied experience and this JD. Generate matching English/Chinese resumes.” |
-| Connected workflow | “Prepare fully for this JD and tailor both resume languages using my configured sources.” |
+| 面试准备 | “用 $jd-interview-prep 准备这个 JD，只准备面试。” |
+| 双语简历 | “用 $bilingual-resume 根据这些真实经历和 JD 生成简历。” |
+| 完整联动 | “按这个 JD 做完整准备，并用已配置的经历定制双语简历。” |
 
-The skills are [jd-interview-prep](skills/jd-interview-prep/SKILL.md) and [bilingual-resume](skills/bilingual-resume/SKILL.md). Agents without automatic skill discovery can read these entrypoints and their relative references. You may install/copy each complete skill directory using your client's skill mechanism; do not assume a single entrypoint file contains all rules. Standalone skills use explicitly supplied settings and do not search this clone for personal data.
+两个技能可独立安装，需复制整个技能目录。不能自动发现技能的客户端，可直接读取其 `SKILL.md`。学习资料跟随请求语言或个人配置；简历始终中英文成对。
 
-## What is public and what stays local
+## 资料与产物
 
-```text
-Job/
-├── AGENTS.md                       # Shared workspace rules
-├── skills/                         # Canonical skill source, scripts, tests
-├── config/
-│   ├── preferences.example.yaml    # Public optional template
-│   └── preferences.yaml            # Ignored personal settings
-├── JD/preparations/
-│   ├── README.md                   # Tracked directory guide
-│   └── <case-id>/                  # Ignored learning packs
-└── Resume/
-    ├── private/                    # Ignored bases and reference materials
-    └── variants/
-        ├── README.md               # Tracked directory guide
-        └── <case-id>/              # Ignored HTML/PDF and version records
-```
+| 路径 | 用途 | 是否入库 |
+| --- | --- | --- |
+| `skills/` | 技能、参考规范、脚本 | 是 |
+| `config/preferences.example.yaml` | 配置模板 | 是 |
+| `config/preferences.yaml` | 个人偏好 | 否 |
+| `JD/preparations/<case-id>/` | 面试包：`artifacts/` 教材与作品，`meta/` 岗位依据与进度 | 否 |
+| `Resume/private/` | 自己的 base 与原始参考资料 | 否 |
+| `Resume/variants/<case-id>/` | 派生简历及版本说明 | 否 |
 
-A preparation pack has a root README, `artifacts/` (independent Essential, systematic KB, QA, and an optional showcase), and `meta/` (required JD, coverage, and progress records, plus conditional sources/handoff). Structure checks do not establish teaching depth or project correctness. The resume workflow uses confirmed facts, not tutorial answers or automatically generated project claims.
+没有 base 时可直接提供真实经历。base 默认只读，只有明确要求维护时才修改。技能独立调用的根目录产物 `preparations/`、`resume-variants/` 同样被忽略。
 
-Showcases are built **locally by default**. Select `showcase.publish: public` or `private`, or explicitly request publication, to publish a separate showcase repository. `pages` defaults to `true` for suitable static demos after publication is enabled; set it to `false` to disable deployment. Pages does not host a backend. Private source does not guarantee a private site ([GitHub documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)): verify the audience first, and require explicit user authorization for a public demo before exposing private-source content publicly. Otherwise omit Pages or record it pending. Keep source visibility unchanged. Backend flows remain reproducible locally. Only reviewed showcase content is published, not the preparation pack or resume.
+## 个人设置
 
-Private settings, sources, JD inputs, and outputs are ignored, including the standalone skills' default root-level `preparations/` and `resume-variants/` outputs. `.gitignore` does not remove files already committed or prevent force-adding them. The public-tree check rejects known private paths and local home paths; it is not a comprehensive personal-data or secret scanner. Review every contribution. Deliberately public examples must use synthetic facts and belong in a separately reviewed `examples/` contribution.
+将配置模板复制为 `config/preferences.yaml`，按需填写；不配置也能运行。键和可选值见[模板](config/preferences.example.yaml)，路径相对项目根目录。
 
-## Preferences
+- `auto` 跟随请求语言或岗位选型；`frontend_policy: prefer_config` 可让指定前端优先于 JD，但教学仍完整覆盖 JD。
+- `showcase.enabled: false` 取消项目；`resume.enabled: false` 取消完整 JD 后的简历联动，不影响明确的独立简历请求。
+- 新任务按“本次要求 → 个人偏好 → 默认”执行；续作先保留原任务已确认设置与手改。明确要求记住偏好时才更新配置。
 
-The [template](config/preferences.example.yaml) lists all supported settings. Paths are relative to the Job root. `language: auto` follows the request; a language tag such as `zh-CN` fixes preparation output. `resume.enabled` controls the connected JD-to-resume workflow, not explicit standalone resume requests.
+Showcase 默认本地生成。`publish: public/private` 开启独立仓库发布，`pages: false` 关闭默认的适用静态演示。私有源码的站点也须核实访问范围，不能仅凭 `pages: true` 公开内容。后端保留本地完整流程；具体发布规则见[发布规范](skills/jd-interview-prep/references/github-workflow.md)。
 
-`showcase.enabled: false` skips the project and all its publication while retaining teaching and any enabled resume handoff. `frontend: auto` and `backend: auto` mean no fixed stack preference; `prefer_config` needs a concrete frontend to override the JD.
+## 验证
 
-`frontend_policy: prefer_jd` gives explicit JD technology priority. With `prefer_config`, the chosen frontend can differ from the JD; teaching and QA still cover the actual requirement. A preferred backend is used when the JD leaves the choice open. Free-text `notes` hold conditional or writing preferences. Preferences cannot remove factual or verification requirements.
-
-For a new task, current instructions override preferences, which override public defaults. On continuation, the task's confirmed settings and user edits also take precedence over changed preferences. Only an explicit request to remember a preference updates the YAML. Do not store credentials or duplicate resume facts in it.
-
-## Dependencies and checks
-
-Use Python 3.10+ and Git. Keep dependencies outside private output directories; for example, from the repository root:
+需要 Python 3.10+、Git；截图识别、联网核实和项目运行环境按任务提供。在项目根目录运行：
 
 ```sh
 python3 -m venv .venv
@@ -69,22 +52,24 @@ python3 -m unittest discover -s skills/bilingual-resume/scripts/tests
 python3 scripts/check_public_tree.py
 ```
 
-The default preference check skips a missing personal file successfully; an explicitly supplied missing file fails. Configuration validation checks syntax/types/options, not the meaning of free-text policies. The pack validator needs only Python's standard library:
+默认个人配置缺失会跳过；显式指定的文件缺失则报错。准备包校验器仅依赖标准库：
 
 ```sh
 python3 skills/jd-interview-prep/scripts/validate_pack.py /absolute/path/to/pack
-# Add --no-project when the user has disabled the showcase.
+# 无项目追加 --no-project；非技术作品集使用 --portfolio，二者互斥。
 ```
 
-Resume rendering additionally needs system Google Chrome and the skill's dependencies:
+简历渲染另需系统 Google Chrome：
 
 ```sh
 .venv/bin/python -m pip install -r skills/bilingual-resume/scripts/requirements.txt
 .venv/bin/python skills/bilingual-resume/scripts/render-pdf.py /absolute/path/to/resume.html /absolute/path/to/resume.pdf
 ```
 
-The renderer replaces the destination only after a nonblank, exactly one-page A4 PDF passes its checks. `REVIEW` files diagnose failures and are not verified deliveries. Inspect extracted text and the visible pages in both languages before claiming completion. Optional features need their own project runtimes or authenticated GitHub access; cloning Job does not install them.
+PDF 须各一页 A4、文字可提取且视觉检查通过。结构校验不证明教学质量、项目实测或用户已掌握。
 
-## Contribute
+## 贡献
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) ([中文](CONTRIBUTING.zh-CN.md)). English is the canonical language for executable instructions; the README and contribution guide are maintained in both languages. Documentation language does not force artifact language. License: [MIT](LICENSE).
+见[贡献指南](CONTRIBUTING.md)。个人配置、真实 JD、简历和产物留在本地；公开示例使用虚构资料。提交前审阅文件及历史，忽略规则和路径检查不能替代人工检查。
+
+技能遵循 [Agent Skills 规范](https://agentskills.io/specification)，项目采用 [MIT](LICENSE)。

@@ -1,7 +1,5 @@
-# Copy to preferences.yaml to activate. / 复制为 preferences.yaml 后生效。
-# All fields are optional. Paths are relative to the Job root.
-# 所有字段均可省略；路径相对 Job 根目录解析。
-language: auto # Follow the request language. / 跟随本次请求语言。
+# 复制为 preferences.yaml 后生效；所有字段可省略，路径相对项目根目录。
+language: auto # 跟随请求语言，也可用 zh-CN、en 等语言标签。
 
 github: {}
 # github:
@@ -10,18 +8,17 @@ github: {}
 showcase:
   enabled: true
   frontend: auto
-  frontend_policy: prefer_jd # prefer_jd | prefer_config
+  frontend_policy: prefer_jd # prefer_jd | prefer_config；auto 不指定技术。
   backend: auto
   publish: local # local | public | private
-  pages: true # Only when publishing a suitable static demo. / 适合且已启用发布时使用。
-  notes: [] # Conditional preferences, in either language. / 中英文均可的条件偏好。
+  pages: true # 仅在已开启发布、适合静态演示且访问范围获准时部署。
+  notes: [] # 条件偏好，用自然语言填写。
 
 resume:
-  enabled: true # Link resumes after a complete JD task. / 完整 JD 任务后联动简历。
+  enabled: true # 完整 JD 后联动简历；不影响明确的独立简历请求。
   references: []
   notes: []
-  # Optional source paths; adding a path does not authorize editing it.
-  # 可选资料路径；配置路径不代表授权修改资料。
+  # 可选资料路径，配置不代表授权修改来源。
   # base_en: Resume/private/resume-base.html
   # base_zh: Resume/private/resume-base-zh.html
-  # primary_language: en # en | zh; omit when no primary source is designated.
+  # primary_language: en # en | zh；未指定主源时省略。

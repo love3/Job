@@ -10,13 +10,13 @@ dist/
 .env.*
 !.env.example
 
-# Personal settings, source materials, and generated outputs stay local.
+# 个人配置、来源资料和生成产物留在本地。
 /config/preferences.yaml
 /Resume/private/
 /JD/preparations/*
 !/JD/preparations/README.md
 /Resume/variants/*
 !/Resume/variants/README.md
-# Standalone skill outputs when invoked from this repository root.
+# 技能从项目根目录独立调用时的默认产物。
 /preparations/
 /resume-variants/

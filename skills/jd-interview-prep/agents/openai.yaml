@@ -1,4 +1,4 @@
 interface:
-  display_name: "JD Interview Preparation"
-  short_description: "Build role-focused lessons, interview QA, and a working showcase"
-  default_prompt: "Use $jd-interview-prep to create a complete interview preparation pack from the JD I provide."
+  display_name: "JD 面试准备"
+  short_description: "依据岗位职责生成核心教材、系统知识库、面试问答与可验证项目，支持独立准备和续作"
+  default_prompt: "使用 $jd-interview-prep，根据我提供的 JD 生成完整面试准备包。"

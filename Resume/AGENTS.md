@@ -1,8 +1,5 @@
-# Resume workflow
+# 双语简历
 
-- Load [the workspace rules](../AGENTS.md) first if needed, including active user preferences. Follow [bilingual-resume](../skills/bilingual-resume/SKILL.md).
-- Read base and reference paths supplied by the user or configured under `resume`. `private/` is a local-only place for these files, not a required source database. With no base, use supplied real experience; never use configuration examples as facts.
-- Respect the configured primary source language when present; otherwise resolve factual conflicts with the user rather than treating one language as inherently authoritative. Bases and original reference PDFs stay read-only unless base maintenance is explicitly requested.
-- Write variants to `variants/<case-id>/`; reuse the JD case-id on handoff. Read `changes.md`, confirmed settings, and user edits before resuming. Do not reset a variant from its base.
-- Produce matching English and Chinese HTML/PDF using the skill's renderer. Each PDF must pass the one-page A4, extracted-text, and visual checks. See the root README for dependencies and commands.
-- Private source files, variants, and version records stay local. Run tests with temporary synthetic facts, not real resume sources.
+先读[工作区约定](../AGENTS.md)，再执行 [bilingual-resume](../skills/bilingual-resume/SKILL.md)。从用户或 `resume` 配置取得真实经历；`private/` 只存本地来源，不是必需的事实库。
+
+本工作区输出 `variants/<case-id>/`，交接复用 JD 的 case-id。续作先读 `changes.md` 与手改。来源主语言按明确设置选择，不单凭语言裁定事实；base 维护须明确提出。

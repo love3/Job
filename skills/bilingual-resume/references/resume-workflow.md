@@ -1,120 +1,63 @@
-# Bilingual resume workflow and acceptance requirements
+# 输出、版式与验收
 
-## 1. Inputs and responsibilities
+## 输出位置
 
-Read the supplied experience, available base, and role input according to the current request and applicable workspace instructions. Ask only when consequential experience, contact details, or wording conflicts cannot be resolved from the supplied materials. Do not store personal experience in the skill. Apply preferences supplied by the user or an already loaded workspace; do not search for private configuration from the skill's installation path.
-
-For new tasks, precedence is the current request, then supplied or loaded preferences, then public defaults. On continuation, the current request comes first, followed by the task's confirmed settings and user edits, then preferences, then defaults. Do not silently change an existing task because a preference file changed. Persist a preference only when the user explicitly requests it.
-
-Role input may be a JD directly or a pack's `meta/resume-handoff.md`; a general resume does not require a target role. When using an existing handoff, read:
-
-- the `case-id`, role source, requirement identifiers, and explanations;
-- the locations and relevant sections of bilingual bases or user experience materials, and any additional sources;
-- project evidence, actual participation, candidate wording, and unconfirmed details;
-- preparation-pack and resume output paths, and existing progress.
-
-Check handoff references first. Fill gaps from explicitly identified pack or workspace sources. If the JD is unreadable, separate confirmed information from gaps rather than inventing requirements. A missing handoff does not prevent independent use.
-
-For explicitly requested base maintenance, update the specified bilingual HTML and corresponding PDFs without creating a case-id or role directory. Do not assume a target role when none is provided. Apply the same factual, layout, and verification requirements; report sources, changes, and checks in the delivery response without requiring a new `changes.md`. The following case-id and directory rules apply to derived role-specific and general versions.
-
-## 2. Case-id, outputs, and continuation
-
-When continuing a supplied or explicitly linked preparation pack, reuse its directory name as the `case-id`; do not attach an independent resume to an unrelated pack merely because that pack exists, or replace the role identifier with a broad career-direction label.
-
-For an independent role-specific task, use `<company>-<role>-<YYYY-MM-DD>`, omitting an unknown company. For a general resume without a target role, use `resume-<YYYY-MM-DD>`. Remove path separators and other invalid filename characters, and use the user's timezone for the date. Create a new directory by default; resolve collisions with `-2`, `-3`, and so on rather than silently reusing another role's directory.
-
-A full target directory supplied by the user or handoff takes precedence. If only an output root is given, create a case-id subdirectory within it; otherwise use applicable workspace instructions. With neither, create `resume-variants/<case-id>/` under the current working directory. Do not write to a private workspace inferred from the skill's installation location.
-
-For continuation, reuse the existing directory, inspect artifacts and `changes.md` first, and change only what this task requires. Preserve confirmed settings and user edits instead of resetting from the base or newly changed preferences. If an existing directory's ownership is unclear, clarify before reusing it.
-
-Derived deliverables:
-
-```text
-<case-id>/
-├── resume-en.html
-├── resume-en.pdf
-├── resume-zh.html
-├── resume-zh.pdf
-└── changes.md
-```
-
-Original reference PDFs remain read-only. Derived versions must not overwrite bases, other versions, or user edits.
-
-## 3. Evidence selection and factual wording
-
-In a derived version's `changes.md`, locate evidence by source path and section, HTML region, or a necessary short quotation, and associate it with role requirement identifiers. Do not create a second factual inventory. For base maintenance, put this information in the delivery response instead. Retain existing JD identifiers; independent role tasks may create simple identifiers, while a general resume needs no role mapping.
-
-Honor a source of truth designated by the user or workspace, such as an English base body with semantically synchronized Chinese. Without such a designation, do not choose authority solely by language. Identify and clarify conflicting fields while continuing unaffected work. The user's current explicit confirmation takes precedence. Newly confirmed facts apply to the derived version unless the user also requests base maintenance. Without a base, use the supplied real materials directly.
-
-Select existing body content for relevance to the target role. When maintaining a base, incorporate newly confirmed facts into its body and synchronize the other language and corresponding PDFs. Do not hide additional experience in nonprinting comments.
-
-Showcase code, tests, and publication records alone cannot prove personal contribution or business results. Include a project only within the scope of explicit, supported participation; writing it into the base also requires an explicit base-maintenance request. Otherwise list it as a candidate in `changes.md`, explain the missing facts, and continue generating from established experience. If base maintenance has no such file, explain the candidate in the delivery response.
-
-Do not treat planned learning, model interview answers, desired exercise benefits, JD inferences, or unmeasured performance figures as experience. State job titles and employment dates factually. A target role may be expressed as a career objective, never disguised as a position held. Use confirmed experience-year conventions rather than incrementing years from the current date.
-
-Preserve contribution and proficiency qualifiers such as "co-designed" or "basic," along with approximation marks, numerators and denominators, units, and measurement definitions. Do not infer an unknown personal share, comparison baseline, precise month, patent ordering, or business scale.
-
-Apply the skill's coherent narrative to the summary, skill ordering, and key experience. Mechanisms and causal claims require evidence too. ATS review checks that names, dates, skills, and experience are ordinary DOM text with a sensible reading order. Successful extraction does not prove compatibility with every ATS.
-
-## 4. English first and the Design System
-
-Read available base HTML in each language first. Preserve language-specific CSS, fonts, and layout differences rather than replacing Chinese styling with English CSS. Existing design and explicit user preferences take precedence over the defaults below; use them to supply a missing language version. Retain content required by confirmed preferences, such as specified patents or sections, instead of deleting it merely to fit the page.
-
-Default baseline:
-
-| Dimension | Design requirement |
+| 模式 | case-id 与目标 |
 | --- | --- |
-| Page | One A4 page, 210 × 297 mm; zero `@page` margin; content padding 14 mm top, 15 mm left/right, and 10 mm bottom; body line-height 1.36 |
-| Fonts | English: `Inter, "Helvetica Neue", Arial, sans-serif`; Chinese: `"PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif`; use available fallbacks |
-| Sizes | Name 24 pt; section headings 9.5 pt; body 10 pt; contact/date and other secondary details 9 pt; education 9.5 pt |
-| Colors | Body `#1a2332`, secondary `#4a5568`, accent `#0f4c81`, divider `#d8dde3` |
-| Sections | A 3 px dark-blue left border on headings, no underline; margins 8 px above and 4 px below; left padding 9 px |
-| Structure | Single-column body; header contains only name and contact details, no separate role title; company and role share a line, with dates right-aligned; education appears later |
-| Density | List-item bottom margin 1.5 px; experience/project bottom margin 8 px; skill-row vertical padding 3 px |
-| Decoration | No portrait, icons, or large color blocks; compact skill alignment must preserve sensible text-extraction order |
+| 接续明确关联的准备包 | 复用包目录名；读取 `meta/resume-handoff.md` 的 JD、来源、项目参与证据与进度，不关联其他现存包 |
+| 独立岗位版 | `<公司>-<岗位>-<YYYY-MM-DD>`；公司未知时省略 |
+| 独立通用版 | `resume-<YYYY-MM-DD>` |
+| 明确维护 base | 原位更新指定的双语 HTML/PDF，不另建 case-id 或版本目录；交付说明记录来源、改动与检查 |
 
-The summary, skill order, key experience, and projects are priority tailoring areas, not the only editable areas. Other content may change when supported by facts. The implementation does not require special HTML comment markers.
+日期按用户时区，名称去除非法路径字符。用户或交接给出的完整目标路径优先；仅给根目录时添加 case-id，其次采用工作区约定，独立默认当前目录的 `resume-variants/<case-id>/`。
 
-Produce English HTML first, render and verify it, then create Chinese. Keep standard technical spellings. Chinese need not be a sentence-by-sentence translation, but scope, participation, dates, figures, project status, and causality must match. Check corresponding sections and key facts across languages.
+新版本建新目录，重名追加 `-2`、`-3`；续作复用原目录，保留用户手改，不从 base 重置。归属不明的目标先核实，派生版本不覆盖 base、参考 PDF 或其他版本。
 
-One A4 page is an acceptance requirement. When content is too long, first remove early experience, project details, and repetition with low relevance to the target role, then tighten wording. Preserve the capability narrative, important facts, and explicit user requirements. Do not pass page-count checks through unreadable fonts, hidden text, or clipping.
+派生版本交付 `resume-en.html`、`resume-en.pdf`、`resume-zh.html`、`resume-zh.pdf` 和 `changes.md`。
 
-## 5. HTML to PDF and verification
+## 版式
 
-Use this skill's renderer:
+优先保留各语言 base 的 CSS、字体和明确设计偏好，不用英文样式覆盖中文。无现有设计时采用下表；内容取舍先保岗位能力主线、重要事实与用户明确要求，再删弱相关细节、精炼措辞，不能靠小到难读的字体、隐藏文本或裁切挤页。
 
-```text
+| 项目 | 默认值 |
+| --- | --- |
+| 页面 | 一页 A4（210 × 297 mm）；`@page` margin 0；内容 padding 上 14、左右 15、下 10 mm；行高 1.36 |
+| 字体 | 英文 `Inter, "Helvetica Neue", Arial, sans-serif`；中文 `"PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif` |
+| 字号 | 姓名 24 pt；分区/教育 9.5 pt；正文 10 pt；联系/日期 9 pt |
+| 颜色 | 正文 `#1a2332`；辅助 `#4a5568`；强调 `#0f4c81`；分隔 `#d8dde3` |
+| 分区 | 标题左侧 3 px 深蓝线，不加下划线；margin 上 8、下 4 px；左 padding 9 px |
+| 结构 | 单栏，页首姓名和联系；公司/职位同行、日期右对齐，教育靠后；无头像、图标或大色块 |
+| 密度 | 列表项下 margin 1.5 px；经历/项目下 margin 8 px；技能行上下 padding 3 px |
+
+姓名、日期、技能和经历须为正常 DOM 文字，提取顺序合理；岗位关键词自然融入有事实支撑的内容，不堆词或隐藏文字。中文可自然改写，技术名词保持标准拼写，关键事实与章节对应。
+
+## PDF 验收
+
+使用技能内 `scripts/render-pdf.py`：
+
+```sh
 python3 <skill-dir>/scripts/render-pdf.py <input.html> <output.pdf>
 ```
 
-The Python dependencies are listed in [scripts/requirements.txt](../scripts/requirements.txt). Install them in an available environment; no virtual environment inside the working directory is required. The renderer uses installed Google Chrome through Playwright's `chrome` channel; it has no browser-selection option and does not download a browser. Use the available Python environment with the listed dependencies. If dependencies remain unavailable, identify the actual missing `playwright`, `pypdf`, or system Chrome component and available alternatives without claiming PDF verification passed.
+在实际使用的 Python 环境安装技能内 `scripts/requirements.txt`，并提供系统 Google Chrome。渲染器使用 Playwright 的 `chrome` 通道，不下载浏览器，也没有浏览器选择参数。
 
-The renderer returns 0 only for exactly one A4 page with extractable text, and replaces the target PDF only after successful verification. Failure preserves an existing target; do not present it as a successful new render. A reported `REVIEW` file is diagnostic only. Multiple pages, non-A4 geometry, empty extracted text, missing dependencies, and rendering errors are failures.
+- **机器检查**：恰好一页、纵向 A4、有可提取文字。只有检查通过才替换目标 PDF；失败保留旧文件，`REVIEW` 只供诊断，不能算本次交付。
+- **文字检查**：核对姓名、联系、日期、术语及必需内容完整，双语事实一致。NFKC 可辅助中文检索，但不能替代原始文字和字形检查。
+- **视觉检查**：分别查看两种语言的页面图像，检查缺字、截断、重叠、溢出、异常换行和可读性。可用 PDF 技能或现有渲染工具，不要求特定插件。
 
-After machine checks, inspect the page image of each PDF separately for clipped edges, overlapping body text, footer overflow, missing glyphs, unusual line breaks, and readability. When available, use an applicable PDF skill for rendering review; otherwise use available PDF rendering or viewing tools. No particular plugin is mandatory. Text extraction alone cannot replace visual inspection.
+缺依赖、渲染失败或视觉未检查时，保留可用产物并明确未完成项，不把旧 PDF 或文字提取成功当作全部通过。
 
-Also check that extracted names, contact details, dates, key terms, and patents are complete, and that factual scope matches between languages. If visual review cannot be completed, retain deliverable HTML and actually generated PDFs, but label the corresponding status "pending visual review" rather than verified.
+## 版本说明与交接
 
-Chinese extraction may contain Unicode compatibility radicals. NFKC may assist keyword checks, but also inspect the original extracted text and visible glyphs. Normalization cannot replace checks for missing glyphs, lost text, or reading order.
+`changes.md` 只保存当前版本的必要信息：
 
-After any HTML change affecting content or layout, repeat rendering and necessary checks for the affected language. Both languages must pass before the pair is complete. Do not repeat unrelated checks without a new output-affecting change or unresolved concern.
+- case-id、模式、JD/输入来源、输出路径和实际采用的设置；
+- 入选经历的来源章节、对应岗位要求、关键改动及理由；候选项目与缺失的参与事实；
+- 中英文各自的渲染命令、页数/A4、文字与视觉检查结果；
+- 当前状态、未完成项、下一步，以及 base 未改的检查结果。
 
-## 6. Version notes and JD writeback
+已有 JD 编号保持不变；独立岗位版可建简要编号，通用版不必映射。确认的新事实只用于派生版本，除非同时要求维护 base。
 
-`changes.md` is the derived version's current explanation and continuation entrypoint, not a copy of the base, entire JD, or knowledge base. Record at least:
+只有确实接续准备包时，按交接中的包路径，在其根 README 链接简历，在 `meta/progress.md` 回写简历状态；不重做 Essential、KB、QA 或项目。回写受阻时记录原因。独立简历不为回写另建准备包。
 
-- case-id, applicable role source, mode (role-specific or general), input sources, output paths, and settings used;
-- selected base sections or user-supplied sources, linked requirement identifiers, significant changes, and their reasons;
-- confirmed participation in new projects, included wording and evidence, and excluded candidates with missing facts;
-- separate English and Chinese render commands, page count, A4 geometry, text extraction, and visual-review results;
-- current resume status, outstanding work, next step, and confirmation that the base stayed unchanged.
-
-When a JD pack's `meta/resume-handoff.md` exists, use its recorded pack root to link the resume directory from the pack's root `README.md`, and record independent resume status and remaining work in `meta/progress.md`. The case-id remains the pack root's directory name. If writeback is required but permission is missing, record the blocker. Do not regenerate completed Essential, KB, QA, or showcase content. Without a pack, an independent task maintains only resume artifacts and does not invoke the JD skill merely to write back.
-
-A resume failure does not change completed interview-material status. A combined task with an incomplete resume cannot be marked entirely complete. Do not invoke this skill when the user explicitly requests interview preparation only.
-
-## 7. Delivery and evaluation boundaries
-
-Link both languages' HTML/PDF and version notes at delivery, with actual verification results and remaining blockers. Do not add personal bases, resumes, JDs, or private materials to a showcase, or publish remote resources automatically.
-
-For evaluation or skill maintenance, use isolated temporary facts, bases, JDs, and outputs. Check that a new role does not overwrite an old one, continuation preserves user edits, unconfirmed participation stays out of the resume, bilingual facts match, and multi-page PDFs fail. Never modify a real base or create remote repositories in the name of testing.
+技能测试只用临时虚构资料，核对新旧目录隔离、续作保留手改、未确认项目不入履历、双语一致及多页拒绝；清理测试产物，不修改真实 base 或创建远程资源。

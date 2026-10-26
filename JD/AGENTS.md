@@ -1,7 +1,5 @@
-# Interview preparation
+# 面试准备
 
-- Load [the workspace rules](../AGENTS.md) first if they have not been loaded, including any active user preferences.
-- Follow [jd-interview-prep](../skills/jd-interview-prep/SKILL.md). This workspace writes packs to `preparations/<case-id>/`; explicit user paths win.
-- Keep the pack README as the entry point, core deliverables in `artifacts/`, and inputs/current records in `meta/`. The JD, coverage, and progress files are required; a resume handoff is conditional.
-- Read existing progress and user edits before continuing. Preserve confirmed case settings unless the current request changes them.
-- Use the skill's structural validator for files and mappings; independently review teaching quality and actually exercise project behavior. Keep generated packs local, including nested showcase repositories; only an explicitly selected showcase is published separately.
+先读[工作区约定](../AGENTS.md)，再执行 [jd-interview-prep](../skills/jd-interview-prep/SKILL.md)。本工作区包根为 `preparations/<case-id>/`，用户指定位置优先。
+
+续作先读包内 `meta/progress.md` 与手改。教材、作品和运行记录按技能分层；结构检查、内容审读、项目实测分别报告。真实包不进入本仓库。

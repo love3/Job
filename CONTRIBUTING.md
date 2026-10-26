@@ -1,44 +1,23 @@
-# Contributing to Job
+# 贡献指南
 
-English | [简体中文](CONTRIBUTING.zh-CN.md)
+先读 [AGENTS.md](AGENTS.md)。大改动先讨论目标，小修复直接提交聚焦的 PR。
 
-Contributions can improve teaching, resume reasoning and layout, reproducible tooling, tests, or documentation. Start with an issue for substantial behavior changes; small focused fixes can go directly to a pull request. Use either English or Chinese for discussion.
+## 修改什么
 
-## Working on a change
+- 技能规则只维护 `skills/`，按 [Agent Skills 规范](https://agentskills.io/specification)组织。
+- 一条能力主线贯穿目标、步骤和验收。保留会改变行为的决策，删除重复、口号和模型已知的常识。
+- 配置合同改动同步模板、校验器、测试与 README；一次性需求不要升级为全局规则。
 
-1. Fork and clone the repository; use a branch for your change. Read [AGENTS.md](AGENTS.md). Skill source lives only in `skills/`.
-2. Use synthetic JD inputs and fictional resume facts in temporary directories. Do not modify real bases or publish showcase repositories as a test side effect.
-3. Describe the concrete problem, resulting behavior, and actual validation in your PR. For teaching changes, include an input and a short before/after example; structure checks alone do not prove better teaching.
-4. Run the checks below, inspect the staged diff and complete public history, and remove temporary files before submitting. Do not force-add ignored personal files.
+## 如何验证
 
-## Checks
+执行 [README 的验证命令](README.md#验证)。技能改动再检查默认请求、明确覆盖和旧任务续作；回答须有指令或产物依据，不能只看字数、标题或结构通过。
 
-From the repository root, with Python 3.10+:
+教学改动给出 JD 和前后例子，检查是否真正学懂机制、能迁移和排障。简历内容或版式改动使用虚构双语素材，实际渲染并核对文字与页面；只改路径无需重渲染真实简历。
 
-```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements-dev.txt
-.venv/bin/python scripts/validate_preferences.py config/preferences.example.yaml
-.venv/bin/python -m unittest discover -s scripts/tests
-python3 -m unittest discover -s skills/jd-interview-prep/scripts/tests
-python3 -m unittest discover -s skills/bilingual-resume/scripts/tests
-python3 scripts/check_public_tree.py
-```
+## 如何提交
 
-If you have personal settings, also run `.venv/bin/python scripts/validate_preferences.py`. Review their meaning privately; never attach them verbatim to an issue. The public-tree check reads the Git index; stage reviewed public changes before using it as a pre-commit check. CI checks the committed tree. It catches known private paths and local home paths, not all possible personal data or secrets.
+说明问题、结果和实际验证。提交前审阅暂存内容与将公开的历史；公开目录检查读取 Git 索引，不是完整的隐私或密钥扫描器。
 
-For resume content/layout or rendering changes, install `skills/bilingual-resume/scripts/requirements.txt` and system Google Chrome. Render synthetic English/Chinese HTML with the skill's renderer, check one-page A4 and extracted text, then inspect both pages visually. Source-path-only changes do not require re-rendering personal resumes.
+测试用临时虚构资料并清理。个人配置、真实 JD、简历和运行记录不入库，也不贴到 issue 或截图；公开示例单独放入经审阅的 `examples/`。不以测试名义修改 base、创建远程仓库或改变发布范围。
 
-For skill behavior changes, test representative requests independently: default settings, an explicit override, and continuation after settings change. Cite the instruction or output that supports the observed choice. Do not report unexecuted project tests or model integrations as passing. Existing pack checks accept English and Chinese mapping vocabulary.
-
-## Documentation and preferences
-
-English is the canonical language for `AGENTS.md`, skill instructions, and execution references. Keep `README.md`/`README.zh-CN.md` and both contribution guides semantically aligned, including commands and paths. Do not add a second automatically loaded instruction translation. Request/output languages remain independent of documentation language.
-
-Add user settings only when they serve an actual task. Update the public example, validator, tests, and both README files together when the configuration contract changes. Use module `notes` for natural-language preferences; do not build a growing enum for every writing choice. Current instructions and confirmed case settings still take precedence.
-
-## Privacy and examples
-
-Keep personal preferences, `Resume/private/`, real preparation packs, and resume variants out of commits, issues, logs, and screenshots. Do not submit real employer-confidential inputs or credentials. Public examples must be deliberately synthetic and reviewed in `examples/`; do not unignore your private output directory to share one. Preserve existing user edits and all source-read-only boundaries.
-
-Contributed original code and documentation use the repository's [MIT license](LICENSE). Identify any third-party material and its license so it can be reviewed before inclusion.
+原创贡献采用 [MIT](LICENSE)；第三方内容注明来源与许可。

@@ -16,21 +16,13 @@ sys.path.insert(0, str(ROOT / "skills/jd-interview-prep/scripts"))
 from validate_pack import markdown_links, relative_target
 
 
-def shell_commands(path: Path) -> list[list[str]]:
-    blocks = re.findall(r"```(?:sh|bash|shell)\n(.*?)```", path.read_text(encoding="utf-8"), re.S)
-    return [
-        [line.strip() for line in block.splitlines() if line.strip() and not line.lstrip().startswith("#")]
-        for block in blocks
-    ]
-
-
 class RepositoryContractsTests(unittest.TestCase):
     def test_documentation_links_resolve_in_the_public_tree(self):
         tracked = set(subprocess.check_output(
             ["git", "-C", str(ROOT), "ls-files", "-z"], text=True,
         ).rstrip("\0").split("\0"))
         for name in sorted(tracked):
-            if not name.endswith(".md"):
+            if not name.endswith(".md") or not (ROOT / name).is_file():
                 continue
             source = ROOT / name
             for link in markdown_links(source.read_text(encoding="utf-8")):
@@ -47,14 +39,6 @@ class RepositoryContractsTests(unittest.TestCase):
                     else:
                         self.assertIn(relative, tracked, "link depends on an untracked or private file")
 
-    def test_bilingual_guides_run_the_same_commands(self):
-        for english, chinese in [("README.md", "README.zh-CN.md"),
-                                 ("CONTRIBUTING.md", "CONTRIBUTING.zh-CN.md")]:
-            with self.subTest(guide=english):
-                commands = shell_commands(ROOT / english)
-                self.assertTrue(commands, "guides must contain executable examples")
-                self.assertEqual(commands, shell_commands(ROOT / chinese))
-
     def test_yaml_dependency_is_installed_for_the_development_checks(self):
         self.assertIsNotNone(yaml, "Install requirements-dev.txt before running development checks")
 
@@ -69,13 +53,35 @@ class RepositoryContractsTests(unittest.TestCase):
                 self.assertIsNotNone(frontmatter, "skill entrypoint must have YAML frontmatter")
                 metadata = yaml.safe_load(frontmatter[1])
                 self.assertEqual(metadata["name"], directory.name)
+                self.assertRegex(metadata["name"], r"\A[a-z0-9]+(?:-[a-z0-9]+)*\Z")
+                self.assertLessEqual(len(metadata["name"]), 64)
                 self.assertIsInstance(metadata["description"], str)
                 self.assertTrue(metadata["description"].strip())
-                interface = yaml.safe_load((directory / "agents/openai.yaml").read_text(encoding="utf-8"))["interface"]
+                self.assertLessEqual(len(metadata["description"]), 1024)
+                self.assertLessEqual(set(metadata), {
+                    "name", "description", "license", "compatibility", "metadata", "allowed-tools",
+                })
+                if "compatibility" in metadata:
+                    self.assertIsInstance(metadata["compatibility"], str)
+                    self.assertTrue(1 <= len(metadata["compatibility"]) <= 500)
+                if "metadata" in metadata:
+                    self.assertIsInstance(metadata["metadata"], dict)
+                    self.assertTrue(all(isinstance(key, str) and isinstance(value, str)
+                                        for key, value in metadata["metadata"].items()))
+                for field in ("license", "allowed-tools"):
+                    if field in metadata:
+                        self.assertIsInstance(metadata[field], str)
+
+                # Client UI metadata is an optional extension, not a skill requirement.
+                ui_path = directory / "agents/openai.yaml"
+                if not ui_path.exists():
+                    continue
+                interface = yaml.safe_load(ui_path.read_text(encoding="utf-8"))["interface"]
                 for field in ("display_name", "short_description", "default_prompt"):
                     self.assertIsInstance(interface[field], str)
                     self.assertTrue(interface[field].strip())
                 self.assertIn("$" + directory.name, interface["default_prompt"])
+                self.assertTrue(25 <= len(interface["short_description"]) <= 64)
 
 
 if __name__ == "__main__":

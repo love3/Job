@@ -1,132 +1,78 @@
-# Preparation Pack Deliverables
+# 产物与格式
 
-Read when mapping requirements, writing, and checking the final pack. Curriculum organization, depth, and content review follow [Learning design](learning-design.md). Internal teaching links are relative to the pack itself, not the skill source or temporary paths. Workspace handoffs may accurately reference facts and resume locations in that workspace. Tables below illustrate format only; replace their content with the actual JD and evidence.
-
-## Layout and boundaries
+## 目录
 
 ```text
-<company>-<role>-<date>/
-├── README.md                     # Learning and demonstration entry point
-├── artifacts/                    # Deliverables to read, practice, and demonstrate
+<公司>-<岗位>-<日期>/
+├── README.md                 # 学习入口
+├── artifacts/
 │   ├── essential.md
 │   ├── qa.md
 │   ├── kb/
 │   │   ├── 00-roadmap.md
-│   │   └── <chapters organized by knowledge dependencies>
-│   └── showcase/                 # When enabled; independent project repository
-│       ├── README.md
-│       └── <actual implementation and necessary documentation>
-└── meta/                         # JD inputs, coverage, continuation, optional handoff
+│   │   └── <教学章节与独立练习>
+│   └── showcase/             # 项目启用时：README、实现、验证说明
+└── meta/
     ├── jd.md
     ├── coverage.md
     ├── progress.md
-    ├── sources/                  # Original attachments only when needed
-    └── resume-handoff.md          # Only for enabled resume integration
+    ├── sources/              # 按需保留原始附件
+    └── resume-handoff.md     # 仅在联动简历时生成
 ```
 
-No-project requests do not need `artifacts/showcase/`; local-only projects still do. KB needs both a roadmap and substantive teaching chapters, expanding with the role's actual demands rather than treating a minimum file count as completion. The root README links core deliverables directly so readers need not inspect run records before studying.
+`jd.md`、`coverage.md`、`progress.md` 在完整包中必需，取消项目也保留；不新增重复的 JSON 要求台账、研究日志或工具流水。教学文件真实存在，符号链接和缓存不能充当正文或实现证据。链接相对**所在文件**解析：覆盖表到教材用 `../artifacts/...`，KB 章节到 JD 用 `../../meta/jd.md`。
 
-### Required, conditional, and continued outputs
+## JD 与覆盖表
 
-| File/directory | Creation condition and purpose |
-| --- | --- |
-| `meta/jd.md` | Required in every complete pack. Sole basis for the extracted JD, sources, numbered requirements, and inferences |
-| `meta/coverage.md` | Required in every complete pack. Maps requirements to teaching, QA, practice, and factual gaps without repeating the body |
-| `meta/progress.md` | Required in every complete pack, created before writing. Current status, decisions, actual verification, and next steps |
-| `meta/resume-handoff.md` | Only when resume integration is configured or explicitly requested; do not create an empty handoff when resumes are omitted |
-| `meta/sources/` | Preserve necessary original attachments as needed; cite directly readable stable sources in the JD instead of duplicating fact inventories |
-
-All three required Meta files remain mandatory when the project is canceled. Do not omit them according to agent interpretation. Do not add redundant JSON requirement inventories, separate research journals, or tool transcripts by default. Continue by reading/updating existing files rather than regenerating the pack. Skill maintenance and ordinary conceptual answers do not create formal packs.
-
-### Relative links
-
-Resolve links from **the containing file's directory**. Root README links `artifacts/essential.md`; Essential links `kb/00-roadmap.md` and `qa.md`; an optional practice link uses `showcase/README.md` only when that project exists. A JD reference from artifacts is `../meta/jd.md`; from a KB chapter it is `../../meta/jd.md`. Coverage links from meta use `../artifacts/...`.
-
-## Sources, requirements, and coverage tables
-
-`meta/jd.md` records company, role, level, sources and faithful extraction, access time, uncertainties, user background/constraints, and adopted settings. Mark missing facts unknown; do not infer user competence.
-
-Use the following requirement-table headers. The ID is an independent value in the first column, unique per table row; the same identifier may recur in prose:
+`meta/jd.md` 保存来源及访问时间、忠实提取、未知处、用户限制与采用设置。要求编号在首列且每表唯一：显式要求 `JD-*`，必要推断 `INF-*` 并写依据；P0 为核心、P1 为支撑、P2 为扩展。续作保留原编号，新增要求追加。
 
 ```markdown
-| ID | Source type | JD requirement / supplemental capability | Priority |
+| ID | 来源类型 | JD 要求/补充能力 | 优先级 |
 | --- | --- | --- | --- |
-| JD-001 | Explicit | Actual requirement from this JD | P0 |
-| INF-001 | Inferred | Necessary prerequisite, with the inference explained | P1 |
+| JD-001 | 明确 | 本 JD 的实际要求 | P0 |
+| INF-001 | 推断 | 有依据的必要先修 | P1 |
 ```
 
-Use only `Explicit` and `Inferred`, corresponding to `JD-*` and `INF-*`, and P0/P1/P2 priorities. Preserve explicit meaning and justify additions. Record years, education, and industry experience instead of deleting them to improve coverage.
-
-`meta/coverage.md` uses the fixed headers below. Its ID set, types, and priorities must match `meta/jd.md`; the requirement column may summarize without changing meaning:
+`meta/coverage.md` 的 ID 集合、类型与优先级须与 JD 一致；每行对应教学、问答及实际证据或差距：
 
 ```markdown
-| ID | Type | Priority | Requirement | Essential | KB | QA | Practice evidence / gaps |
+| ID | 类型 | 优先级 | 要求 | Essential | KB | QA | 实践证据/差距 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| JD-001 | Explicit | P0 | Actual requirement | [Mechanism and self-test](../artifacts/essential.md) | [Teaching](../artifacts/kb/01-topic.md) | [Question and follow-ups](../artifacts/qa.md) | [Implementation and verification](../artifacts/showcase/README.md) |
+| JD-001 | 明确 | P0 | 实际要求 | [机制](../artifacts/essential.md) | [教学](../artifacts/kb/01-topic.md) | [追问](../artifacts/qa.md) | [实现与验证](../artifacts/showcase/README.md) |
 ```
 
-For Chinese outputs, equivalent headers are accepted: requirement table `ID | 来源类型 | JD 要求/补充能力 | 优先级`; coverage `ID | 类型 | 优先级 | 要求 | Essential | KB | QA | 实践证据/差距`. Types `明确`/`推断` are equivalent to `Explicit`/`Inferred`; English types are case-insensitive. These are bilingual output contracts, independent of the language of the skill instructions.
+- 核心要求链接对应正文，尽量定位章节。支撑或扩展要求可在 Essential 列写 `非核心：具体原因`，KB、QA 仍承接；不能因难、项目未做或标成 P1 就排除关键主题。
+- 学历、年限等写 `非学习项：原因`，保留真实差距与回答。实践列链接包内实际文件或有内容的真实目录，不能借符号链接引用包外证据。
+- 未完成或无法证明时用 `差距：原因`、`待完成：原因与下一步`、`未验证：原因`。取消项目写 `已省略：用户取消项目`，同时提供适合的 KB 练习。
+- 复合要求在同一行链接各子能力，或在表后按原 ID 简述映射；不插断表格，不重复编号。已有链接不代表内容讲够。
 
-Core requirements link appropriate Essential teaching, preferably a section. Supporting or extended requirements may use `Non-core: <specific reason>` in that column, explaining why they do not belong to the core thread. KB and QA still need actual treatment or a factual-gap response: `Non-core` does not exempt those columns. Difficulty, lack of project implementation, or an existing KB link is insufficient grounds to exclude a key role requirement. Decide preparation priority separately from textbook order; do not automatically include/exclude an entire priority level.
+英文产物使用同一格式：JD 表头 `ID | Source type | JD requirement / supplemental capability | Priority`；覆盖表头 `ID | Type | Priority | Requirement | Essential | KB | QA | Practice evidence / gaps`。类型 `Explicit`/`Inferred` 不区分大小写，分别对应明确/推断；状态对应 `Non-core:`、`Non-learning item:`、`Gap:`、`Pending:`、`Unverified:`、`Omitted:`，均须具体理由。
 
-For non-learning items such as education or years, use `Non-learning item: <specific reason>` and provide an honest QA/gap response. Practice links actual project files, verification, or exercises. Use `Gap: <specific reason>` for unproven capability, `Pending: <reason and next step>` for unfinished work, or `Unverified: <reason>` for unverified work. With no project, write `Omitted: user canceled the project` and still link suitable KB exercises. Chinese equivalents are `非核心：`, `非学习项：`, `差距：`, `待完成：`, `未验证：`, and `已省略：`, always followed by a concrete reason.
+## 各文件职责
 
-For compound requirements, identify each sub-capability's teaching/QA anchors in the same row, or add concise mappings by existing requirement ID after the table. Do not insert prose between table rows, change identifiers, or create duplicate management files. A broad chapter link must not hide untreated sub-capabilities.
+教学深度按入口指定的教学规则执行；此处只约定文件责任。
 
-Coverage is navigation and a factual record, not a mastery score. Blank columns, placeholder links, and “covered” do not replace content. Existing links do not establish sufficient depth. Content review checks specific treatment, acceptance goals, and practice claims. Disclose genuine blockers in both the entry point and progress.
+| 文件 | 应包含什么 |
+| --- | --- |
+| `artifacts/essential.md` | 岗位核心问题总览、独立正文、完整例子、自测与参考推理 |
+| `artifacts/kb/00-roadmap.md` | 知识主线、先修回补、章节入口、练习和验收路线 |
+| KB 章节 | JD 关联、目标、先修、机制、例子、变式练习及答案；可附独立练习文件 |
+| `artifacts/qa.md` | 按主题组织的口述回答、展开推理和追问；项目题关联实际证据 |
+| `artifacts/showcase/README.md` | 业务价值、环境/依赖、启动、数据、演示步骤、预期结果和测试命令 |
 
-## artifacts/essential.md: an independent core textbook
+项目另按需要写设计取舍、验证记录与演示脚本，说明数据流、替代方案、局限、JD 映射，以及实际命令、版本、日期、结果、未测部分。非技术岗位交付有来源、方法和评价标准的可检验作品，不强加软件。
 
-Essential helps time-limited readers establish core understanding of the role, mechanisms, tradeoffs, and failures. Start with a concise overview, relationships, and reading route, then independently teach the core topics from zero. Examples, self-tests, and reference reasoning do not depend on the project. Topic selection, layered reading, self-contained examples, and evidence-based review follow learning design; other deliverables cannot patch missing explanations in this body.
+包入口先写岗位主线和学习优先级，再给核心、系统、实践路线，直达 Essential、KB、QA；项目和线上链接仅在存在且验收后添加。最后链接 Meta、事实差距与未完成项，不要求读者先翻运行记录。
 
-## KB: from prerequisites to role-level depth
+## 进度与验收
 
-`artifacts/kb/00-roadmap.md` presents the knowledge landscape, core thread, prerequisite recovery, chapter index, exercise goals, and acceptance methods. Each chapter states requirement links, learning goals, prerequisites, and precise entry points. Unknown background means beginner treatment; unknown deadlines do not justify invented schedules. Systematic study does not presuppose Essential or a running project.
+确定目录即写 `meta/progress.md`，记录输入/采用设置、当前决策、已完成文件、验证摘要、阻塞及下一步。文档、实现、项目验证、源码发布、线上演示、简历各记独立状态；未知字段不补造。源码记录仓库 URL/分支/SHA；Pages 另记实际 URL、workflow run、部署提交和浏览器结果。每阶段更新当前状态，不堆逐次工具输出。
 
-Develop the body through topics and understanding dependencies. Learning design defines standards for normal processes, complete examples, variations, reference reasoning, diagnosis, and design choices. Key knowledge outside the project still needs teaching and practice; JD frameworks cannot be replaced by a preferred showcase stack. Length, code volume, file count, and source count are not depth metrics. Distinguish applicable versions/sources, observed results, and expectations.
+在技能目录运行，或使用脚本绝对路径：
 
-## QA: clear spoken answers and defensible follow-ups
+```sh
+python3 scripts/validate_pack.py /absolute/path/to/pack
+# 项目被取消时追加 --no-project；非技术作品用 --portfolio，二者互斥。
+```
 
-Organize `artifacts/qa.md` by the role's core topics and a prioritized route. Foundations, mechanisms, scenarios, project, and behavior may be category labels. Train every explicit JD requirement and each sub-capability in compound requirements, or provide an honest factual-gap response. Prioritize depth in important topics; actual needs determine question count.
-
-Each question includes an identifier such as `Q-001`, JD IDs, assessment target, concise spoken answer, reasoned deep answer, follow-ups with reference answers, common mistakes, and precise teaching links. Project questions additionally cite actual evidence. Short answers respond directly; deep answers explain causes, conditions, and choices. General technical/scenario answers are independent of the showcase. Follow learning design for progressive questioning, review routes, and candidate questions for the interviewer.
-
-- Scenario answers identify assumptions, analysis, alternatives, and verification, rather than implying one universal correct solution.
-- Check every project feature, number, and test-scope claim. KB ideal designs, standalone exercises, and generic test lists are not current implementation evidence. Label unimplemented capabilities as extensions, not existing features.
-- Behavioral questions use real user facts; with insufficient facts provide a situation/task/action/result framework and honest phrasing. Label hypothetical examples so they cannot be mistaken for user experience.
-- A mock-interview sequence or self-assessment criteria may supplement, not replace, complete answers.
-
-## Showcase: inspectable evidence
-
-First define target users, business loop, deeply demonstrated capabilities, observable behavior, minimum acceptance scenarios, and simplifications. Then actually implement them; fragments and design documents alone are not a complete project. Use independent exercises for core capabilities outside the project rather than reducing teaching depth.
-
-`artifacts/showcase/README.md` explains value, prerequisites, dependencies, installation/startup, demo data, a step-by-step demonstration, expected output, and test commands, plus a verified online link and simulation scope when published. Technology selection and optional Pages/local modes follow [Showcase workflow](showcase-workflow.md). Split other material when useful:
-
-- Design tradeoffs: modules/data flow, key decisions, alternatives, limitations, and JD capability mappings.
-- Verification evidence: actual environment/versions, commands, dates, results, and coverage boundaries. Claims trace to implementation or checks. Give reasons for unrun checks; do not present expectations as measurements or copy unperformed scenarios from templates.
-- Demo script: show the complete loop, explain key design, present verification, and disclose limitations.
-- Project follow-ups may stay in local `artifacts/qa.md`; the published project has necessary run/design documentation and never depends on local learning material or Meta files.
-
-Meaningfully verify critical business and error-prone paths, without tests for an arbitrary coverage target. Distinguish test, performance, and business-impact evidence. Label simulated data; missing external credentials may lead to a local demonstration, never a false claim of real integration.
-
-For nontechnical roles, use inspectable reports, analytical models, or operational plans with sources, methods, evaluation criteria, and limitations. Do not force unrelated software.
-
-Publication follows [GitHub workflow](github-workflow.md) only when enabled.
-
-## Entry point, progress, and validation
-
-Root `README.md` first explains the role's core work, capability thread, and priorities, then offers core-understanding, systematic-learning, and integrated-practice routes. Link Essential, KB roadmap, and QA, plus the project when enabled and any verified online demo. Core reading does not require running a project. Show dependencies and recovery points for systematic learning; practice enters implementation afterward. Route goals and acceptance follow learning design. Then provide Meta navigation and centralize real-experience gaps, unfinished work, source publication, and online-demo status.
-
-`meta/progress.md` preserves cross-session facts as concise current status, key decisions, verification summaries, and next steps, not a history of tool output:
-
-- Inputs, user overrides/adopted preferences, and unanswered but nonblocking assumptions.
-- Independent states for documents, implementation, project verification, source publication, and online demo: not started / in progress / complete / blocked / omitted, with reasons. Pages completion means online acceptance, not merely a successful deployment command.
-- Completed files, important decisions, content-review method/specific gaps/revision checks, actual commands/dates/results, and evidence locations. Separate generating material from reviewing learning quality.
-- Confirmed GitHub account, repository URL, branch, and SHA when publishing. For Pages, separately record actual URL, workflow run, deployed commit, and browser result. Explain unpublished/unverified states instead of inventing unknown fields.
-- Blockers, incomplete work, and executable next steps. Inspect user edits before continuation.
-
-When resume integration is required, follow [Resume handoff](resume-handoff.md) to create `meta/resume-handoff.md` with actual progress paths and maintain independent bilingual-resume status, verification, and links. Resume status does not rewrite interview-material status. An interview-only request records the resume as omitted by user instruction.
-
-Run `python3 scripts/validate_pack.py PACK_DIR` with the pack root. Add `--no-project` for a canceled project or `--portfolio` for nontechnical reports, never both. A default technical project needs a non-document implementation file; portfolio mode allows a nonempty report, PDF, image, etc. beyond README. The script checks required files, relative file links, requirement IDs, type/priority consistency, and coverage columns. Symbolic links and cache directories do not supply pack deliverables or implementation evidence. It does not check internet links, fragment anchors, teaching quality, artifact authenticity, code execution, user mastery, source pushes, or online deployment.
-
-If publication is blocked or writing remains unfinished, deliver usable work and consistently disclose the state in the entry point, progress, and final response. File counts, empty sections, template markers, or a structure pass cannot stand in for complete delivery.
+结构检查只验证文件、正文存在性、相对文件链接、ID、类型/优先级及映射；不验证锚点、外网链接、教学深度、代码运行或发布。技术项目至少有非文档实现文件，作品集至少有 README 之外的非空作品。内容、项目运行和发布另行验收，未完成状态在入口、进度和交付中一致说明。

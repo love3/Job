@@ -1,41 +1,34 @@
-# Showcase Technology Selection and Demo Modes
+# Showcase：实现与演示
 
-Read when implementing a project. See [Deliverables](deliverables.md) for structure and [GitHub workflow](github-workflow.md) for publication. Select technology to demonstrate core JD capabilities; do not add unnecessary frontend/backend components merely to use a preferred stack.
+## 先选证据，再选技术
 
-## Choose the capability to prove
+从岗位主线挑一段业务闭环深入实现，先定输入、输出、可观察行为、验收场景和简化范围。空脚手架、架构图或阶段动画不算实现；项目未覆盖的核心能力由独立练习承接。
 
-Choose part of the whole pack's capability thread for deep implementation. Map it in the project README/design to concrete behavior, demo inputs, and verification evidence; cover other core capabilities through standalone KB exercises. A small scope is acceptable, but it must not shrink teaching or use broad capability labels to conceal a UI-only implementation.
+例如要证明工具执行，程序应实际完成调用接收、参数校验、分派、结果关联、回传及继续/结束。确定性模型和工具替身可以验证这条程序链，但不能证明真实模型决策或生产效果。文档中的功能、指标、测试范围均应追溯到代码或实测。
 
-For example, proving host-side tool execution needs actual handling of a proposed call, validation and dispatch, correlated results, return to the model, and continuation/termination. Deterministic model output and tool stand-ins can verify that program chain; stage animation cannot. Distinguish stand-in verification, real model decisions, external integration, and production effects. Missing live dependencies need not prevent a complete, verifiable program mechanism.
+## 选型
 
-Check each feature, number, and test-scope claim in project documentation and QA against code or actual checks. KB designs, simulation scripts, and generic test lists are not current facts. Citing a verification document does not establish every scenario claimed in prose.
+默认按 JD 和业务需要选择，依赖使用实施时核实的兼容版本与锁文件。不为默认栈增加无用服务；简述采用理由、与 JD 的差异及补充练习。
 
-## Technology selection
+- `frontend: auto`、`backend: auto` 表示不固定技术。`frontend_policy: prefer_jd` 优先 JD 的明确框架；`prefer_config` 仅在配置了具体前端时优先该偏好，即使 JD 写另一框架。本次明确选择仍优先。
+- 后端有明确 JD 限定时遵循限定；JD 未限定或列出可选语言时，可采用用户偏好。偏好项目栈不改变 JD 的教学与问答范围，例如 Vue 实现不能算 React 实践证据。
 
-- Select frameworks and languages from the JD and actual project needs by default. Current user instructions override adopted preferences; explicitly loaded preferences may select a different demonstration stack. Do not load personal settings from the installation directory. On continuation, preserve confirmed stack decisions unless current instructions change them.
-- **Frontend:** Use the JD's required framework when it is relevant to the project by default. When supplied, `frontend_policy: prefer_jd` keeps an explicit JD requirement ahead of a configured frontend; `prefer_config` uses a concrete configured frontend even when the JD names another stack. `frontend: auto` means no stack preference and still follows the JD/project needs; `backend: auto` likewise leaves the backend choice open. A current explicit user instruction takes precedence. For example, a user can select Vue with `prefer_config` even for a React JD; disclose that difference and fully teach/practice the JD's React requirements in KB and QA. A Vue showcase cannot be claimed as verified React implementation. Essential continues to select topics by role-level importance.
-- **Backend:** Follow explicit JD requirements by default. When no backend is mandated, honor a supplied preference such as FastAPI or choose an appropriate implementation. A JD listing languages as alternatives leaves that choice open. A current instruction can explicitly change the demonstration stack; record any difference. Do not add a backend to a purely frontend project.
-- Briefly record the selection rationale, differences from the JD, and complementary exercises. Use compatible versions checked during implementation and lock dependencies as appropriate; do not hardcode dependency versions as permanent skill defaults.
+## 本地完整链路与静态演示
 
-## One project, optional static and complete local modes
+项目默认本地运行。有后端时保留完整可复现链路；允许发布且适合浏览器展示时，另提供同一前端的静态模式。源码与站点范围由发布规则决定，不默认部署额外后端或购买云服务。
 
-The default deliverable is a local project. `pages` defaults to `true`, but deployment also requires enabled publication, a meaningful browser demo, and an allowed site audience under the [publication workflow](github-workflow.md). `pages: false` disables deployment. Keep a reproducible full local flow for projects with a backend. Pages hosts static HTML/CSS/JavaScript; an application backend needs its own runtime process, so a successful Pages build is not backend deployment. Do not purchase services or create other cloud resources by default. [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages), [FastAPI deployment example](https://fastapi.tiangolo.com/deployment/manually/).
-
-| Part | Optional Pages static demo | Complete local flow |
+| 共享部分 | 静态演示 | 本地完整流程 |
 | --- | --- | --- |
-| UI, rendering, editing, interaction state | Same frontend | Same frontend |
-| Input/output/event constraints and public samples | Shared contracts and fixtures | Shared contracts and fixtures |
-| Transport adapter | In-browser simulation or fixture replay | HTTP/backend calls when needed |
-| Business scope | Explicitly simulated scenarios and limitations | Actually implemented interfaces, business logic, and dependencies |
+| UI、渲染、编辑、交互状态、输入输出约束 | 同一套前端与样例 | 同一套前端与样例 |
+| 数据适配 | 浏览器模拟或 fixture 回放 | 真实实现的接口、业务逻辑与依赖 |
 
-- Switch the transport adapter rather than maintaining two UIs or duplicating backend business algorithms for Pages. Prevent cross-language contract drift with shared schemas, type generation, or the same positive/negative samples validated by both sides. Use the smallest suitable approach.
-- Label the Pages UI and README “static demo / simulated data.” Explain sample selection and which capabilities need local services. Arbitrary input must not appear to have been understood by a real model. A public demo needs no keys, login, or localhost service; an access-controlled private Pages site may require its existing GitHub access check. Never bundle secrets in the browser. The full local flow may also use mocks; state which real dependencies are integrated and actually checked.
-- If generation streams, share event consumption, validation, result commit, and request-identity protection across adapters. Keep project-relevant progress, error, slow-response, cancellation, and retry interactions. Business needs determine event/protocol design; do not impose one project's fixed stages on every showcase.
-- Static cancellation cleans timers, streams, and old request state. Separately test disconnection and background-task cleanup in the local flow. Browser cancellation or a passing simulation does not prove a real model call was canceled, provider billing stopped, or production integration was verified.
+通过数据适配层切换，避免复制 UI 和后端算法；跨语言接口用共享 schema、类型生成或同组正反样例防止漂移。GitHub Pages 只托管静态文件，构建成功不等于后端已部署。[Pages 说明](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
 
-## Local acceptance
+静态页与 README 明示“模拟数据/静态演示”、可用样例和局限，不能让任意输入看起来经过真实模型理解。公开演示不依赖密钥、登录或 localhost；受控私有站点可使用既有访问检查。密钥只配置在服务端环境，不打包进浏览器。本地流程也可能有 mock，分别标明真实接入与已测范围。
 
-1. Verify shared contracts, valid/invalid samples, the business loop, and project-relevant errors, cancellation, concurrency, and stale responses. Frontend and backend should agree on the same public samples.
-2. If a Pages mode is included, build and preview under the real repository subpath with the local API stopped. Check core interactions, resources, and applicable editing/export. No localhost requests, missing keys, or resource 404s may be required for the static loop. Test direct navigation and refresh when routing is used.
-3. Start and check the complete local flow, including real interface/frontend integration. For streaming, commit only a valid terminal result; preserve recoverable state on failure/cancellation, and prevent stale requests from overwriting newer work.
-4. Record commands, results, environment, and limitations separately for each implemented mode. A published simulation proves tested program behavior, not real model quality, production impact, or personal work experience.
+## 验收
+
+- 实际运行正常业务闭环和关键错误路径；前后端使用一致正反样例。按项目需要检查慢响应、并发、重试、取消和过期结果。
+- 流式任务只提交有效终态，失败或取消保留可恢复状态，旧请求不能覆盖新结果。静态取消清理计时器/流/请求状态；本地另查断连和后台清理。浏览器取消不能证明模型调用或计费停止。
+- 静态模式在实际仓库子路径构建并预览，关闭本地 API 后检查资源、核心交互、路由刷新及适用的编辑/导出；不得依赖本地服务或缺失密钥。
+- 分别记录各模式的命令、环境、实际结果和局限。模拟验证、真实集成、性能测量和业务效果分开说明。

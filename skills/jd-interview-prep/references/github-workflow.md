@@ -1,118 +1,32 @@
-# Showcase Implementation and GitHub Publication
+# GitHub 发布
 
-Read when a project is needed. Technology selection and demo modes follow [Showcase workflow](showcase-workflow.md); complete output requirements are in [Deliverables](deliverables.md), and the main flow is in [SKILL.md](../SKILL.md).
+仅在已要求发布时执行。本次要求、任务已确认设置或已加载偏好可授权发布，无需重复确认；完整准备、技能维护或隔离测试本身不授权创建远程资源。
 
-## Defaults and authorization scope
+## 发布边界
 
-- Implement a complete, locally runnable small project in `artifacts/showcase/` by default. “Project directory” below means that path. **Local generation is the default; a complete preparation request alone does not enable publication.** Publish source only when current instructions or explicitly adopted preferences select public/private publication. `pages` defaults to `true` after publication is enabled, subject to suitability and the audience checks in section 5; `pages: false` disables deployment. Derive the repository's ASCII theme slug from the core capability without unnecessarily exposing the target employer.
-- Owner and fallback author identity come from explicit current input or loaded workspace preferences/fact sources, never a hardcoded person. Current input wins. When publishing without an owner setting, use the current authenticated personal account; do not infer it from an email. Verify any specified owner.
-- Explicitly configured publication is part of the requested workflow, so do not ask for the same permission again. Planning, skill maintenance, isolated evaluation without a real task, local-only, no-project, and publication-disabled requests create no remote showcase resources or deployments. Changing a one-off instruction does not save a new personal preference unless requested. Preserve confirmed publication settings on continuation unless current instructions change them.
-- Use a fallback email only when supplied by confirmed user information and a valid author email is missing. It is not evidence of authenticated identity. Keep existing valid author settings; any required change is repository-local, never global.
-- Publish only the project directory and upload only its static build to Pages. Keep JD input, resumes, learning material, QA, coverage, and progress local. Extract appropriate public project explanations instead of copying the whole preparation pack.
+`showcase.publish` 默认 `local`；仅 `public`/`private` 创建远程。只提交 `artifacts/showcase/`，Pages 只上传静态构建；JD、简历、教材、QA、覆盖与进度留在本地。仓库名用项目主题 slug，不必暴露目标公司。
 
-## 1. Local implementation and verification
+发布前审阅待提交文件，排除凭据、真实 `.env`、私人资料、JD 原文、缓存和构建产物；公开样例使用占位值或明确模拟数据。首次公开复用仓库时，还须审阅目标分支全部可达历史及已删除内容，续推审阅新增提交。不能确认范围时保留本地成果并记录阻塞，不以删库、改历史或 force-push 掩盖问题。
 
-1. Select core requirements suitable for deep implementation in a small project. Define inputs, outputs, the business loop, visible results, and tradeoffs. An empty scaffold or design document is not a completed project.
-2. Implement a local flow and, when enabled, a suitable static mode using [Showcase workflow](showcase-workflow.md). Do not purchase or deploy other cloud services by default. Configure actual external dependencies through environment variables and provide usable examples. Label simulated data and mocks in both README and demo. Record untested real integrations as gaps, not completed integration.
-3. Complete code, meaningful tests, run instructions, design tradeoffs, verification records, and a demo script using [Deliverables](deliverables.md). Actually run the project and key checks, recording commands, outcomes, environment, and limitations. Performance and accuracy numbers must come from measurement.
-4. Before any enabled publication, inspect the exact files to commit. Exclude credentials, tokens, real `.env` values, personal information, JD text, private data, dependency caches, and build products. Configure an appropriate `.gitignore`; use placeholders or clearly simulated public examples. Do not print sensitive contents into logs.
+## 源码验收
 
-A public push also exposes commit history. Before the first publication of a reused repository, inspect all reachable history of the branch to be published, including deleted files; on later pushes inspect added commits. The current tree/index alone is insufficient. If the history cannot be confirmed within the public scope, preserve local work and report a publication blocker without deleting or rewriting history.
+1. **独立仓库。** 规范化项目路径并核对 Git 顶层目录；返回父仓库时在 showcase 内初始化，不操作父级索引或配置。复用已有分支、历史和有效作者信息；缺身份时从确认资料或 GitHub 账号取得，只改项目级 Git 配置。
+2. **身份与目标。** 使用能完成任务的 connector，否则用 `gh`/Git。核实认证账号、明确 owner 及写权限，不以邮箱推断身份、不打印 token。先读远程目标；同账号同名不等于同项目，只有进度、remote、历史或用户要求能证明归属时才复用，否则递增名称后缀。区分不存在与无权访问，不替换不同的 `origin`。
+3. **提交与推送。** 只暂存审阅过的项目文件，检查无无关改动后提交；分别判断建仓、推送结果。使用实际分支和指定可见性，不假定旧仓库在 `main`。
+4. **核实结果。** 远程分支 SHA 必须与本次预期本地提交一致，同时核实 URL、owner、可见性和默认分支。命令成功或拿到 URL 不算源码发布完成。
 
-For a local-only project, stop before remote configuration and report source publication/Pages as omitted under the adopted settings. The independent local repository and verification can still be completed.
+## Pages 验收
 
-## 2. Confirm an independent Git repository
+`pages` 默认 `true`，但只有已启用发布、适合静态展示且访问范围允许时才部署；`false` 明确关闭。纯后端无需为托管强加前端。
 
-The preparation pack may be inside another Git repository. Resolve the project's actual absolute path and check the Git top level; successful `git status` alone does not prove independence.
+1. 核实目标的资格、权限、现有发布来源与站点访问范围，保留用户设置。[私有源码不保证站点私有](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)；私有源码仅在站点访问受控，或用户明确授权公开演示时部署。授权可来自本次要求、已确认任务或明确的偏好，`pages: true` 本身不授权扩大访问范围。不能满足时省略或记待确认，不改源码可见性。
+2. 用官方 Pages Actions 构建和部署，实施时核实并固定版本/提交；仅上传静态输出，根目录有 `index.html`。部署依赖构建成功及 `contents: read`、`pages: write`、`id-token: write`、`github-pages` 环境。[官方流程](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)
+3. 按实际 URL 设置资源前缀；Vite 项目站点通常为 `/<repo>/`，账户根站点或已确认自定义域名用 `/`。需要 SPA 路由时优先 hash，并验证直达和刷新。[Vite 部署](https://vite.dev/guide/static-deploy.html#github-pages)
+4. 核对本次目标提交对应的 workflow run、构建/部署结果、部署 SHA 和实际 Pages URL；地址从发布状态取得，不猜。部署提交不同时查明原因，不能用旧演示证明本次成功。
+5. 浏览器打开实际地址，确认目标构建、资源、模拟标识和业务交互，检查适用的流式、取消、重新生成、编辑/导出。无需本地服务且交互通过才算线上验收；HTTP 200、URL 或 workflow 成功均不能替代。无法浏览器验证则记待验收。
 
-Commands below are stepwise examples. Obtain paths and names from confirmed state instead of interpolating JD/user text directly into shell commands.
+## 失败与续作
 
-```sh
-showcase_dir='/absolute/path/to/preparations/company-role-date/artifacts/showcase'
-git -C "$showcase_dir" rev-parse --show-toplevel
-```
+结果未知时先核对远程仓库、分支与本地 remote，再决定重试，避免重复建仓。无法继续时记清阻塞与下一步，继续独立可做部分。
 
-Normalize and compare the returned path to `showcase_dir`. If equal, inspect and reuse it. If the command fails or returns a parent repository, initialize inside the project directory. Do not operate on the parent's configuration or index.
-
-```sh
-git -C "$showcase_dir" init -b main
-git -C "$showcase_dir" config --get user.name
-git -C "$showcase_dir" config --get user.email
-```
-
-Preserve an existing repository's branch and history. Use valid author settings when present. If missing, determine the name from confirmed user identity or GitHub account data, using an available confirmed fallback email where needed. Restrict any change to this repository, for example:
-
-```sh
-git -C "$showcase_dir" config --local user.email "$project_email"
-```
-
-Obtain and safely pass `project_email` from confirmed information; do not run the example with an unknown value. Inspect the working tree and stage reviewed paths only. The filenames below are examples, not a fixed list. Do not use `git add ..` or expand into the pack or parent repository. When reusing a repository, ensure the index contains no unrelated existing user changes.
-
-```sh
-git -C "$showcase_dir" status --short --untracked-files=all
-git -C "$showcase_dir" add -- README.md .gitignore pyproject.toml src tests
-git -C "$showcase_dir" diff --cached --stat
-git -C "$showcase_dir" diff --cached --name-only
-```
-
-Review staged content and actual verification before committing. Describe the real implementation, not unrun tests as passed. This commit covers only the showcase.
-
-## 3. Verify GitHub identity and target when publication is enabled
-
-Prefer an available platform connector that can read identity/repositories, create a repository, publish content, and verify the remote commit. Otherwise use `gh` and `git`. The same identity, scope, and outcome rules apply to either; no specific connector is mandatory.
-
-With `gh`, first read:
-
-```sh
-gh auth status
-gh api user --jq '.login'
-```
-
-Check valid authentication, the selected owner, and target write permission without reading/printing tokens. Email is not authentication evidence. If a configured owner differs from the authenticated identity, first inspect explicit authorization for that account; without grounds ask which identity to use rather than switching accounts or creating resources. Continue feasible local work if authentication is unavailable, recording pending publication.
-
-Read the chosen remote target before creating it. A default slug can be `jd-<project-theme>`; use `-2`, `-3`, etc. for naming conflicts. Reuse an existing same-name repository only when progress, configured remote, history, or explicit user instructions establish that it belongs to this project. Ownership by the same account alone does not authorize overwriting it. Distinguish absence from permission/read failures before creating anything.
-
-```sh
-repo_slug='jd-example-project'
-gh repo view "$repo_owner/$repo_slug" --json nameWithOwner,url,isPrivate,defaultBranchRef
-git -C "$showcase_dir" remote -v
-```
-
-Both `repo_owner` and `repo_slug` must be verified identifiers. Inspect the exact target of an existing `origin`; do not replace a different remote. Confirm repository identity, file scope, a valid local commit, and adopted publication settings before remote writes.
-
-## 4. Create, push, and verify
-
-Treat repository creation and pushing as separate states. This example applies only when **public publication is enabled**, the target is confirmed absent, and no `origin` exists. Use `--private` instead when private publication is selected; local mode does not run either command.
-
-```sh
-gh repo create "$repo_owner/$repo_slug" --public --source="$showcase_dir" --remote=origin
-git -C "$showcase_dir" remote get-url origin
-git -C "$showcase_dir" branch --show-current
-```
-
-Use the actual branch name after confirming the remote. Do not assume a reused repository uses `main`, and do not force-push.
-
-```sh
-project_branch='main'
-git -C "$showcase_dir" push -u origin "$project_branch"
-git -C "$showcase_dir" rev-parse HEAD
-git -C "$showcase_dir" ls-remote origin "refs/heads/$project_branch"
-gh repo view "$repo_owner/$repo_slug" --json nameWithOwner,url,isPrivate,defaultBranchRef
-```
-
-Mark **source publication complete** only after the remote branch SHA matches the expected local commit and URL, owner, visibility, and default branch are verified. A new repository's default branch should be the demonstration branch; inspect before changing mismatches. Connector publication also requires remote commit verification. Repository creation, command success, or receiving a URL does not prove code publication or an online demo.
-
-## 5. Optional GitHub Pages deployment and online acceptance
-
-1. Proceed only when Pages is enabled, publication allows it, and a meaningful browser demo exists. Inspect eligibility, permissions, and the actual site audience before deployment; a [private source repository does not guarantee a private Pages site](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site). With private source, deploy only with verified restricted access, or explicit user authorization for a public demo. Such authorization may come from current instructions, confirmed task settings, or saved preferences that specifically authorize a public site; `pages: true` alone does not authorize broader access. Do not ask again for an already authorized audience. Otherwise omit Pages or record it pending while preserving private source visibility. Configure Actions as the publishing source only if needed, verify existing settings belong to this project, and preserve them. Continue local/source delivery if deployment is unavailable. For backend-only or unsuitable projects, record inapplicability instead of adding a frontend or another cloud backend for hosting.
-2. Provide a Pages workflow for actual-branch pushes and manual dispatch. Run appropriate checks, install locked dependencies, and build the static demo using official `configure-pages`, `upload-pages-artifact`, and `deploy-pages` actions. Verify current official versions during implementation and pin verified versions/commits. Deployment needs `contents: read`, `pages: write`, `id-token: write`, the `github-pages` environment, and successful build dependencies. Upload only static output with `index.html` at its root, not the repository or local backend. [Official Actions workflow](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
-3. For Vite project sites, set `base` from the actual URL to `/<repo>/`; use `/` only for account-root sites or confirmed custom domains. Asset and fixture paths follow the same prefix. Do not add routing unnecessarily; where needed, default to hash routing and check direct navigation/refresh. Preview the build at the same subpath without a localhost API before pushing. [Vite Pages deployment](https://vite.dev/guide/static-deploy.html#github-pages).
-4. After pushing, inspect the workflow run for the target commit, `head_sha`, build/deployment conclusions, and actual Pages URL. Reconcile any difference between deployed and verified source commits instead of accepting an old deployment as current. Read the URL from Pages/deployment state rather than guessing. [Pages status API](https://docs.github.com/en/rest/pages/pages#get-a-github-pages-site).
-5. Open the actual online URL in a browser and check resources, clear simulation labeling, and the business loop. Test applicable streaming, cancellation, regeneration, editing, and export. Mark **online demonstration accepted** only when the page belongs to the intended build and works without local services. Workflow success, HTTP 200, or a URL cannot replace interaction checks; unavailable browser verification means pending online acceptance.
-
-## 6. Failures, continuation, and status
-
-- If creation times out or the outcome is unknown, read the target repository, remote, and branch first, reconciling completed actions before retrying. Do not create duplicate repositories because the previous result is uncertain.
-- Stop repeating an operation after the same failure occurs twice. Record the error category, completed steps, and information required to proceed while continuing independent work. Do not delete repositories, rewrite history, or force-push to hide failures.
-- Track local implementation, project verification, source publication, and online deployment/acceptance independently in `meta/progress.md`. Record actual commands/results, repository URL/branch/SHA, and applicable Pages URL/workflow run/deployed commit/browser checks. Mark unknown fields unverified; preserve failures and next steps without inventing success or mixing stage states.
-- Add verified source and online links separately to the pack and project README. Any resulting new public commit requires final source/deployment verification again. The pack's own state records are never uploaded with the showcase. A Pages failure does not erase local or source-verification facts; report each separately and preserve usable work for continuation.
+在现有进度中分别记录本地实现、项目验证、源码发布、线上验收；保存真实命令/结果、仓库 URL/分支/SHA，以及适用的 Pages URL、workflow run、部署提交和浏览器结果。未知不补造，失败不抹去已完成阶段。新增公开提交后重新核实最终源码与部署，再把已验证链接写入项目和包入口。
