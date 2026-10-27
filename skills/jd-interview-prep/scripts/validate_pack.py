@@ -53,6 +53,15 @@ LIMITATION = (
     "Structural success does not establish teaching depth, authentic work, "
     "successful project tests, or GitHub publication; verify these separately."
 )
+# Quality guards: heuristic prompts (warnings only, never blocking) so the next
+# run does not silently repeat the same gaps. They are not depth judgments.
+SOURCE_AREA_LINES = 20
+SOURCE_URL = re.compile(r"https?://[^\s)\]]+")
+PUBLISHED_ARTIFACT = re.compile(r"(?:public-?demo|demo[-_ ]|preview|pages|audit|deploy)", re.I)
+FAYNMAN_SELFCHECK = "费曼自检"
+FAYNMAN_QUIZ = "费曼抽问"
+REFERENCE_TALK = "参考讲解"
+TEACH_NEWBIE = "教给新手"
 
 
 @dataclass
@@ -478,6 +487,66 @@ def _project_file(path: Path, portfolio: bool = False) -> bool:
     }
 
 
+def _quality_warnings(root: Path, documents: dict[str, str], kb_docs: list[Path], report: Report) -> None:
+    """Heuristic quality prompts for recurring gaps; warnings only, never blocking."""
+    # 1. JD source must be traceable: a URL in the jd.md source area, or an
+    #    original attachment under meta/sources/. Text-only retelling is a gap.
+    jd_text = documents.get(JD_FILE, "")
+    source_area = "\n".join(jd_text.splitlines()[:SOURCE_AREA_LINES])
+    if not SOURCE_URL.search(source_area):
+        sources_dir = root / "meta" / "sources"
+        has_attachment = False
+        try:
+            if sources_dir.is_dir():
+                has_attachment = any(
+                    f.is_file() and not f.name.startswith(".") and f.stat().st_size > 0
+                    for f in sources_dir.iterdir()
+                )
+        except OSError:
+            has_attachment = False
+        if not has_attachment:
+            report.warnings.append(
+                f"{JD_FILE}: JD source is not traceable: put the original URL in the source area "
+                "(Markdown link with access date and how it was read), or keep the original JD "
+                "attachment under meta/sources/."
+            )
+    # 2. meta/sources/ holds only original JD attachments; publishing evidence
+    #    belongs in meta/progress.md and the showcase verification notes.
+    sources_dir = root / "meta" / "sources"
+    if sources_dir.is_dir():
+        for entry in sources_dir.iterdir():
+            if entry.is_file() and PUBLISHED_ARTIFACT.search(entry.name):
+                report.warnings.append(
+                    f"meta/sources/: '{entry.name}' looks like a publishing/demo artifact. "
+                    "meta/sources/ holds only original JD attachments; record publishing evidence "
+                    "in meta/progress.md and the showcase verification notes."
+                )
+    # 3. Feynman checks need an attached reference talk: a question without a
+    #    spoken demo leaves the reader with no answer to practise against.
+    essential = prose(documents.get(ESSENTIAL_FILE, ""))
+    if essential.count(FAYNMAN_SELFCHECK) > essential.count(REFERENCE_TALK):
+        report.warnings.append(
+            f"{ESSENTIAL_FILE}: each 费曼自检 must attach a 参考讲解 "
+            f"(1-2 min spoken demo: analogy opening -> mechanism chain -> close). "
+            f"Found {essential.count(FAYNMAN_SELFCHECK)} 自检 but {essential.count(REFERENCE_TALK)} 参考讲解."
+        )
+    qa = prose(documents.get(QA_FILE, ""))
+    if qa.count(FAYNMAN_QUIZ) > qa.count(REFERENCE_TALK):
+        report.warnings.append(
+            f"{QA_FILE}: each 费曼抽问 must attach a 参考讲解 sample answer "
+            f"(analogy expanded into a full spoken demo). "
+            f"Found {qa.count(FAYNMAN_QUIZ)} 抽问 but {qa.count(REFERENCE_TALK)} 参考讲解."
+        )
+    for path in kb_docs:
+        label = path.relative_to(root).as_posix()
+        text = prose(documents.get(label, ""))
+        if FAYNMAN_SELFCHECK in text and TEACH_NEWBIE not in text and REFERENCE_TALK not in text:
+            report.warnings.append(
+                f"{label}: chapters with 费曼自检 need a 教给新手 line, or a 参考讲解 "
+                "linking to the essential demo."
+            )
+
+
 def validate_pack(directory: str | Path, no_project: bool = False, portfolio: bool = False) -> Report:
     if no_project and portfolio:
         raise ValueError("no_project and portfolio are mutually exclusive.")
@@ -556,6 +625,7 @@ def validate_pack(directory: str | Path, no_project: bool = False, portfolio: bo
             if jd_metadata[identifier] != coverage_metadata[identifier]:
                 report.errors.append(f"{COVERAGE_FILE}: {identifier} type and priority must match {JD_FILE}.")
         _coverage(coverage_rows, documents[COVERAGE_FILE], root, report, owned)
+    _quality_warnings(root, documents, kb_docs, report)
     return report
 
 
