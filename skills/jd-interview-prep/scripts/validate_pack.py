@@ -62,6 +62,11 @@ FAYNMAN_SELFCHECK = "费曼自检"
 FAYNMAN_QUIZ = "费曼抽问"
 REFERENCE_TALK = "参考讲解"
 TEACH_NEWBIE = "教给新手"
+# A reference talk must return to the original knowledge: the analogy is only
+# an entry point, and the demo has to map its elements back to real terms,
+# mechanisms and boundaries. These markers make that mapping explicit.
+TALK_MARKER = re.compile(r"(?m)^\s*(?:\*\*)?参考讲解(?:\*\*)?")
+KNOWLEDGE_RETURN = re.compile(r"原知识|专业术语|专业概念|映射回|本质", re.I)
 
 
 @dataclass
@@ -487,6 +492,26 @@ def _project_file(path: Path, portfolio: bool = False) -> bool:
     }
 
 
+def _talk_blocks(text: str) -> list[str]:
+    """Text following each line-level 参考讲解 marker up to the next marker or heading.
+
+    Only markers that start a line count as demos; mentions inside a sentence
+    (e.g. "含参考讲解") are not talks.
+    """
+    blocks = []
+    matches = list(TALK_MARKER.finditer(text))
+    for index, match in enumerate(matches):
+        start = match.end()
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        heading = re.search(r"^#{1,6}\s", text[start:end], re.M)
+        if heading:
+            end = start + heading.start()
+        block = text[start:end]
+        if block.strip():
+            blocks.append(block)
+    return blocks
+
+
 def _quality_warnings(root: Path, documents: dict[str, str], kb_docs: list[Path], report: Report) -> None:
     """Heuristic quality prompts for recurring gaps; warnings only, never blocking."""
     # 1. JD source must be traceable: a URL in the jd.md source area, or an
@@ -527,7 +552,7 @@ def _quality_warnings(root: Path, documents: dict[str, str], kb_docs: list[Path]
     if essential.count(FAYNMAN_SELFCHECK) > essential.count(REFERENCE_TALK):
         report.warnings.append(
             f"{ESSENTIAL_FILE}: each 费曼自检 must attach a 参考讲解 "
-            f"(1-2 min spoken demo: analogy opening -> mechanism chain -> close). "
+            f"(1-2 min spoken demo: analogy opening -> mechanism chain -> 对照原知识 -> close). "
             f"Found {essential.count(FAYNMAN_SELFCHECK)} 自检 but {essential.count(REFERENCE_TALK)} 参考讲解."
         )
     qa = prose(documents.get(QA_FILE, ""))
@@ -545,6 +570,23 @@ def _quality_warnings(root: Path, documents: dict[str, str], kb_docs: list[Path]
                 f"{label}: chapters with 费曼自检 need a 教给新手 line, or a 参考讲解 "
                 "linking to the essential demo."
             )
+    # 4. A reference talk is not just an analogy: it must map back to the
+    #    original knowledge, or the reader keeps the metaphor but not the
+    #    essence. Check every document that carries its own demos.
+    def warn_analogy_only(label: str, text: str) -> None:
+        for block in _talk_blocks(prose(text)):
+            if not KNOWLEDGE_RETURN.search(block):
+                report.warnings.append(
+                    f"{label}: a 参考讲解 only uses an analogy without mapping back "
+                    "to the original knowledge; add a '对照原知识' step naming the "
+                    "real terms, mechanisms and boundaries."
+                )
+
+    for label in (ESSENTIAL_FILE, QA_FILE):
+        warn_analogy_only(label, documents.get(label, ""))
+    for path in kb_docs:
+        label = path.relative_to(root).as_posix()
+        warn_analogy_only(label, documents.get(label, ""))
 
 
 def validate_pack(directory: str | Path, no_project: bool = False, portfolio: bool = False) -> Report:
