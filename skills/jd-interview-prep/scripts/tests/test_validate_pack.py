@@ -490,6 +490,47 @@ class ValidatePackTests(unittest.TestCase):
                 validator.main([str(link)])
             self.assertEqual(result.exception.code, 2)
 
+    def test_analogy_only_reference_talk_warns_without_knowledge_return(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            make_pack(root, project=False)
+            change(root, "artifacts/essential.md",
+                   "学习正文：[问答](qa.md)、[岗位](../meta/jd.md)。\n",
+                   "学习正文：[问答](qa.md)。\n\n"
+                   "**费曼自检**：讲清管道取舍。\n\n"
+                   "**参考讲解**（口述示范）：数据管道就像分拣仓库，包裹先堆进大仓再拆箱上架。\n")
+            change(root, "artifacts/qa.md",
+                   "回答正文：[教学](kb/01-topic.md)。\n",
+                   "回答正文：[教学](kb/01-topic.md)。\n\n"
+                   "## 抽问\n\n**费曼抽问**：讲清 ELT。\n\n"
+                   "**参考讲解**：就像档案馆先收原件再分类。\n")
+            report = validator.validate_pack(root, no_project=True)
+            self.assertTrue(report.ok)  # quality prompts never block
+            warnings = " ".join(report.warnings)
+            self.assertEqual(warnings.count("only uses an analogy"), 2)
+            self.assertIn("对照原知识", warnings)
+
+    def test_reference_talk_with_knowledge_return_has_no_warning(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            make_pack(root, project=False)
+            change(root, "artifacts/essential.md",
+                   "学习正文：[问答](qa.md)、[岗位](../meta/jd.md)。\n",
+                   "学习正文：[问答](qa.md)。\n\n"
+                   "**费曼自检**：讲清管道取舍。\n\n"
+                   "**参考讲解**（口述示范）：数据管道就像分拣仓库；"
+                   "对照原知识：摄取即落地原始数据，bronze 层原样保留，"
+                   "转换对应 silver/gold 建模与清洗，幂等保证重跑不重复。\n")
+            change(root, "artifacts/qa.md",
+                   "回答正文：[教学](kb/01-topic.md)。\n",
+                   "回答正文：[教学](kb/01-topic.md)。\n\n"
+                   "## 抽问\n\n**费曼抽问**：讲清 ELT。\n\n"
+                   "**参考讲解**：档案馆类比；映射回原知识：ELT 先全量落原始层，"
+                   "查询时再建模，本质是用廉价存储换重复计算的灵活性。\n")
+            report = validator.validate_pack(root, no_project=True)
+            self.assertTrue(report.ok)
+            self.assertNotIn("only uses an analogy", " ".join(report.warnings))
+
 
 if __name__ == "__main__":
     unittest.main()
